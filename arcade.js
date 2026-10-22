@@ -41,8 +41,11 @@ HARD MODE LEADERBOARD FOR TROLL TRAPS(ONLY PRANAV CAN UPDATE)
 // -------------------------------------------------------------
 // UPDATE LOG (newest first). Add a new entry here for every update!
 // -------------------------------------------------------------
-var ARCADE_VERSION = "v12.1";
+var ARCADE_VERSION = "v12.2";
 var UPDATE_LOG = [
+    {v: "v12.2", title: "TIDIER HUB", lines: [
+        "BRICK BREAKER MOVED INSIDE PONG",
+        "PONG MENU: PLAY AGAINST BOT, PLAY LOCAL, BRICK BREAKER"]},
     {v: "v12.1", title: "LOOP FIXES", lines: [
         "FIXED INFINITELOOP ERRORS: NO MORE OPEN-ENDED LOOPS",
         "SNAKE AND TOWER BOARDS DRAW WITH HALF THE SHAPES",
@@ -959,7 +962,6 @@ var HUB_GAMES = [
     { key: "BLOCKS",  label: "BLOCK DROP",   color: "#eab308" },
     { key: "BLASTER", label: "BLASTER",      color: "#0284c7" },
     { key: "PONG",    label: "PONG",         color: "#6366f1" },
-    { key: "BRICK",   label: "BRICKS",       color: "#db2777" },
     { key: "TANK",    label: "TANK ARENA",   color: "#d97706" },
     { key: "G2048",   label: "2048",         color: "#ca8a04" },
     { key: "TOWER",   label: "TOWER DEF.",   color: "#15803d" },
@@ -1007,7 +1009,8 @@ function showArcadeHub() {
         hubIcons.push({ objs: drawHubIcon(d.key, x + 22, y + 26), seed: n });
         var best = bestFor(d.key), sub, subColor;
         if (best !== null) { sub = "\u2605 " + (d.key === "TRAP" ? "LVL " : (d.key === "TOWER" ? "WAVE " : "")) + best; subColor = "#fde68a"; }
-        else if (d.key === "BRICK" || d.key === "TANK") { sub = "NEW!"; subColor = "#fbcfe8"; }
+        else if (d.key === "TANK") { sub = "NEW!"; subColor = "#fbcfe8"; }
+        else if (d.key === "PONG") { sub = "+ BRICK BREAKER"; subColor = "#fbcfe8"; }
         else { sub = "PLAY"; subColor = "rgba(255,255,255,0.55)"; }
         mkCText(sub, x + 76, y + 42, "bold 7pt Courier", subColor);
     }
@@ -1120,7 +1123,7 @@ function onMouseClick(e) {
         if (id === "easy") startSelectedGame("EASY");
         else if (id === "med") startSelectedGame("MED");
         else if (id === "hard") startSelectedGame("HARD");
-        else if (id === "back") { if (selectedGame === "ASTRO") showArcadeHub(); else showCustomizer(selectedGame); }
+        else if (id === "back") { if (selectedGame === "ASTRO") showArcadeHub(); else if (selectedGame === "PONG") showPongSelect(); else showCustomizer(selectedGame); }
     }
     else if (s === "UPDATES") {
         if (id === "updPrev") showUpdateLog(updatePage - 1);
@@ -1142,10 +1145,9 @@ function onMouseClick(e) {
         else if (id === "back") showArcadeHub();
     }
     else if (s === "PONG_SELECT") {
-        if (id === "pongEasy") initPongGame("CPU", "EASY");
-        else if (id === "pongMed") initPongGame("CPU", "MED");
-        else if (id === "pongHard") initPongGame("CPU", "HARD");
+        if (id === "pongBot") showDifficultyScreen("PONG");
         else if (id === "pong2p") initPongGame("2P", "MED");
+        else if (id === "pongBrick") startNeonGame("BRICK");
         else if (id === "back") showCustomizer("PONG");
     }
     else if (s === "TOWER") {
@@ -1173,6 +1175,7 @@ function startSelectedGame(diff) {
     else if (selectedGame === "SNAKE") initSnakeGame(diff);
     else if (selectedGame === "PARKOUR") initParkourGame(diff);
     else if (selectedGame === "DINO") initDinoGame(diff);
+    else if (selectedGame === "PONG") initPongGame("CPU", diff);
     else if (selectedGame === "ASTRO") { diffs.ASTRO = diff; saveProfile(); initAsteroidGame(); syncNeon(); }
     else if (selectedGame === "BLOCKS") initBlocksGame(diff);
     else if (selectedGame === "BLASTER") initBlasterGame(diff);
@@ -4064,12 +4067,14 @@ function showPongSelect() {
     neonMenu("PONG", "#a3e635", 60, 360);
     currentAppState = "PONG_SELECT";
     var g = [];
-    addText("FIRST TO " + PONG_WIN + " WINS", "9pt Courier", "center", 122, "#94a3b8", g);
-    makeButton("pongEasy", 80, 140, 240, 42, "#10b981", "1 PLAYER - EASY", "12pt Courier", 27, g);
-    makeButton("pongMed", 80, 192, 240, 42, "#3b82f6", "1 PLAYER - MEDIUM", "12pt Courier", 27, g);
-    makeButton("pongHard", 80, 244, 240, 42, "#ef4444", "1 PLAYER - HARD", "12pt Courier", 27, g);
-    makeButton("pong2p", 80, 296, 240, 42, "#a855f7", "2 PLAYERS", "12pt Courier", 27, g);
-    makeButton("back", 80, 360, 240, 40, "#374151", "BACK", "12pt Courier", 26, g);
+    addText("PICK A MODE", "9pt Courier", "center", 122, "#94a3b8", g);
+    makeButton("pongBot", 80, 140, 240, 46, "#6366f1", "PLAY AGAINST BOT", "12pt Courier", 29, g);
+    addText("first to " + PONG_WIN + "  -  easy, medium or hard", "8pt Courier", "center", 204, "#9ca3af", g);
+    makeButton("pong2p", 80, 218, 240, 46, "#a855f7", "PLAY LOCAL (2 PLAYERS)", "11pt Courier", 29, g);
+    addText("P1: W/S    P2: UP/DOWN", "8pt Courier", "center", 282, "#9ca3af", g);
+    makeButton("pongBrick", 80, 296, 240, 46, "#db2777", "BRICK BREAKER", "12pt Courier", 29, g);
+    addText("smash the bricks with your paddle", "8pt Courier", "center", 360, "#9ca3af", g);
+    makeButton("back", 80, 372, 240, 36, "#374151", "BACK", "12pt Courier", 24, g);
     popIn(g, 0, 480, 24);
 }
 
