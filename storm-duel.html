@@ -228,6 +228,7 @@ a.ghostbtn{text-decoration:none;text-align:center;display:inline-block}
     <div id="toast"></div>
     <div id="fps" class="num" hidden></div>
     <div id="me" class="panel">
+      <span class="label" id="me-name">You</span>
       <div class="statrow"><b id="sh-num" class="num" style="color:var(--shield)">100</b><div class="bar sh"><i id="sh-fill"></i></div></div>
       <div class="statrow"><b id="hp-num" class="num" style="color:var(--hp)">100</b><div class="bar hp"><i id="hp-fill"></i></div></div>
     </div>
@@ -271,6 +272,7 @@ a.ghostbtn{text-decoration:none;text-align:center;display:inline-block}
   <div class="overlay" id="start">
     <div class="card">
       <h1 class="title">Storm Duel</h1>
+      <p class="place" id="who-start" hidden></p>
       <p class="tagline">Build, edit and fight one on one. Pick a mode, then use walls, floors, ramps and cones to outplay a bot.</p>
       <div style="display:grid;gap:8px">
         <span class="label">Mode</span>
@@ -357,6 +359,9 @@ const DV = [[0,-1],[1,0],[0,1],[-1,0]];
 const lerp = (a,b,k) => a + (b-a)*k;
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 const coarse = matchMedia('(pointer:coarse)').matches;
+// The player name tag picked on the site's start page (arcade.html)
+const siteName = (() => { try { const s = JSON.parse(localStorage.getItem('arcadeSession') || 'null'); return s && s.name ? String(s.name).toUpperCase() : ''; } catch (e){ return ''; } })();
+if (siteName){ $('me-name').textContent = siteName; $('who-start').textContent = 'Playing as ' + siteName; $('who-start').hidden = false; }
 
 /* ---------- settings ---------- */
 const SKEY = 'storm-duel-settings-v1';
@@ -1685,7 +1690,7 @@ function endGame(result, fromStorm){
   setTimeout(() => {
     try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e){}
     $('end-place').textContent = (result === 'win' ? '#1 of 2' : '#2 of 2') + ' · ' + MODE_LABEL[gameMode];
-    const t = $('end-title'); t.textContent = result === 'win' ? 'You win the duel' : 'Eliminated';
+    const t = $('end-title'); t.textContent = result === 'win' ? (siteName ? siteName + ' wins the duel' : 'You win the duel') : 'Eliminated';
     t.className = 'result ' + (result === 'win' ? 'win' : 'lose');
     const lvl = DIFF[diffKey].label.toLowerCase();
     $('end-sub').textContent = result === 'win'

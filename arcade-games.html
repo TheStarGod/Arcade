@@ -1,17 +1,59 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pranav and Advik's Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@500;700&display=swap">
 <style>
-  body { margin: 0; background: #05050f; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: Courier, monospace; }
-  canvas { background: #000; image-rendering: pixelated; box-shadow: 0 0 40px rgba(99,102,241,0.35); }
-  #hint { position: fixed; bottom: 8px; width: 100%; text-align: center; color: #475569; font-size: 11px; }
+/* Same night-sky look as the start page: starfield behind, slim top bar, the game filling the rest. */
+:root{--bg:#05050f;--ink:#f3f5ff;--dim:#9aa3c9;--pink:#ec4899;--violet:#a855f7;
+  --font-display:"Bungee","Impact","Arial Black",sans-serif;--font-ui:"Chakra Petch","Segoe UI",system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);display:flex;flex-direction:column;align-items:center}
+#stars{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+#bar{position:relative;z-index:1;width:100%;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;
+  padding:8px max(14px,env(safe-area-inset-right,0px)) 8px max(14px,env(safe-area-inset-left,0px))}
+#bar a{justify-self:start;color:var(--ink);text-decoration:none;font-weight:700;font-size:14px;letter-spacing:.06em;
+  padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
+#bar a:hover,#bar a:focus-visible{border-color:var(--pink);outline:none}
+#bar h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(16px,3.2vw,26px);white-space:nowrap;
+  background:linear-gradient(180deg,#fff 15%,#f9a8d4 60%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+#who{justify-self:end;font-weight:700;font-size:13px;letter-spacing:.08em;color:var(--dim);white-space:nowrap}
+#who b{color:#fbcfe8}
+#stage{position:relative;z-index:1;flex:1;display:grid;place-items:center;width:100%}
+canvas#game{display:block;background:#000;border-radius:10px;box-shadow:0 0 0 2px rgba(168,85,247,.45),0 0 60px rgba(236,72,153,.35)}
+#hint{position:fixed;z-index:2;bottom:10px;left:0;right:0;text-align:center;color:var(--dim);font-size:12px;pointer-events:none}
+@media (max-width:560px){#bar h1{display:none}#bar{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
-<canvas id="game" width="400" height="480"></canvas>
-<div id="hint">click the game once so it hears your keyboard</div>
+<canvas id="stars" aria-hidden="true"></canvas>
+<header id="bar">
+  <a href="arcade.html">&larr; Games</a>
+  <h1>Pranav &amp; Advik's Arcade</h1>
+  <span id="who"></span>
+</header>
+<main id="stage"><canvas id="game" width="400" height="480"></canvas></main>
+<div id="hint">Click the game once so it hears your keyboard</div>
+<script>
+(function () {
+  var s = null; try { s = JSON.parse(localStorage.getItem("arcadeSession") || "null"); } catch (e) {}
+  document.getElementById("who").innerHTML = s && s.name ? 'Player <b></b>' : 'Playing as guest';
+  if (s && s.name) document.getElementById("who").querySelector("b").textContent = String(s.name).toUpperCase();
+  var c = document.getElementById("stars"), g = c.getContext("2d"), st = [];
+  function size(){ c.width = innerWidth; c.height = innerHeight; } size(); addEventListener("resize", size);
+  for (var i = 0; i < 120; i++) st.push({x: Math.random(), y: Math.random(), s: Math.random()*1.6 + .3, v: Math.random()*.0004 + .0001});
+  var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  (function draw(){ g.clearRect(0, 0, c.width, c.height);
+    for (var i = 0; i < st.length; i++){ var p = st[i]; if (!still){ p.y += p.v; if (p.y > 1) p.y = 0; }
+      g.fillStyle = "rgba(255,255,255," + (.35 + p.s/3) + ")"; g.fillRect(p.x*c.width, p.y*c.height, p.s, p.s); }
+    requestAnimationFrame(draw); })();
+})();
+</script>
 <script>
 // ---- A tiny stand-in for the CodeHS graphics library ----
 // It supports everything arcade.js uses: Rectangle, Circle, Text, Line, add/remove,
@@ -19,6 +61,18 @@
 (function () {
   var canvas = document.getElementById("game");
   var ctx = canvas.getContext("2d");
+  // The games draw on a 400 x 480 board. The canvas is scaled up to fill the screen and
+  // drawn at screen resolution, so everything stays sharp instead of blurry.
+  var W = 400, H = 480, scale = 1;
+  function fit() {
+    var bar = document.getElementById("bar").offsetHeight;
+    var k = Math.min(window.innerWidth / W, (window.innerHeight - bar - 12) / H);
+    var cssW = Math.floor(W * k), cssH = Math.floor(H * k), dpr = window.devicePixelRatio || 1;
+    canvas.style.width = cssW + "px"; canvas.style.height = cssH + "px";
+    canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
+    scale = canvas.width / W; dirty = true;
+  }
+  window.addEventListener("resize", fit);
   var objs = [];
   var dirty = true;
 
@@ -70,8 +124,8 @@
     nextBoolean: function () { return Math.random() < 0.5; },
     nextColor: function () { return "#" + Math.floor(Math.random() * 16777215).toString(16); }
   };
-  window.getWidth = function () { return canvas.width; };
-  window.getHeight = function () { return canvas.height; };
+  window.getWidth = function () { return W; };
+  window.getHeight = function () { return H; };
   window.add = function (o) { objs.push(o); dirty = true; };
   window.remove = function (o) { var i = objs.indexOf(o); if (i >= 0) objs.splice(i, 1); dirty = true; };
   window.removeAll = function () { objs = []; dirty = true; };
@@ -82,7 +136,7 @@
   window.setTimer = function (fn, ms) { stopTimer(fn); timers.push({ fn: fn, id: setInterval(fn, ms) }); };
   window.stopTimer = function (fn) { for (var i = timers.length - 1; i >= 0; i--) if (timers[i].fn === fn) { clearInterval(timers[i].id); timers.splice(i, 1); } };
 
-  function evt(e) { var r = canvas.getBoundingClientRect(); var x = (e.clientX - r.left) * canvas.width / r.width, y = (e.clientY - r.top) * canvas.height / r.height; return { getX: function () { return x; }, getY: function () { return y; } }; }
+  function evt(e) { var r = canvas.getBoundingClientRect(); var x = (e.clientX - r.left) * W / r.width, y = (e.clientY - r.top) * H / r.height; return { getX: function () { return x; }, getY: function () { return y; } }; }
   window.mouseClickMethod = function (fn) { canvas.addEventListener("click", function (e) { fn(evt(e)); }); };
   window.mouseMoveMethod = function (fn) { canvas.addEventListener("mousemove", function (e) { fn(evt(e)); }); };
   window.mouseDownMethod = function (fn) { canvas.addEventListener("mousedown", function (e) { fn(evt(e)); }); };
@@ -91,7 +145,8 @@
   window.keyDownMethod = function (fn) { window.addEventListener("keydown", function (e) { if ([32, 37, 38, 39, 40].indexOf(e.keyCode) >= 0) e.preventDefault(); fn(e); }); };
   window.keyUpMethod = function (fn) { window.addEventListener("keyup", function (e) { fn(e); }); };
 
-  function render() { if (dirty) { ctx.clearRect(0, 0, canvas.width, canvas.height); for (var i = 0; i < objs.length; i++) objs[i].draw(); dirty = false; } requestAnimationFrame(render); }
+  function render() { if (dirty) { ctx.setTransform(scale, 0, 0, scale, 0, 0); ctx.clearRect(0, 0, W, H); for (var i = 0; i < objs.length; i++) objs[i].draw(); dirty = false; } requestAnimationFrame(render); }
+  fit();
   requestAnimationFrame(render);
   canvas.addEventListener("click", function () { document.getElementById("hint").style.display = "none"; });
 })();

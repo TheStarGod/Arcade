@@ -41,8 +41,12 @@ HARD MODE LEADERBOARD FOR TROLL TRAPS(ONLY PRANAV CAN UPDATE)
 // -------------------------------------------------------------
 // UPDATE LOG (newest first). Add a new entry here for every update!
 // -------------------------------------------------------------
-var ARCADE_VERSION = "v12.3";
+var ARCADE_VERSION = "v12.4";
 var UPDATE_LOG = [
+    {v: "v12.4", title: "ONE SIGN-IN", lines: [
+        "THE START PAGE ASKS YOUR NAME ONCE FOR THE WHOLE SITE",
+        "THE ARCADE USES IT, NO MORE PROMPTS",
+        "FULL-SCREEN ARCADE WITH THE NEW LOOK"]},
     {v: "v12.3", title: "GAME LAUNCHER", lines: [
         "NEW START SCREEN: PICK THE ARCADE OR STORM DUEL",
         "BACK BUTTON ON THE HUB RETURNS TO THE START SCREEN",
@@ -1024,6 +1028,7 @@ function showArcadeHub() {
     }
 
     nMakeButton(10, 384, 150, 22, "#374151", isGuest ? "LOG IN / SIGN UP" : "SWITCH PLAYER", function () {
+        if (ON_WEBSITE) { location.href = "arcade.html#player"; return; }
         login();
         showArcadeHub();
     }, 8);
@@ -5944,11 +5949,30 @@ function hashPassword(name, pw) {
 
 function setStatus(text, color) { saveStatus = text; saveStatusColor = color; }
 
+// Website only: read who signed in on the start page (arcade.html)
+function siteLogin() {
+    var s = null;
+    try { s = JSON.parse(localStorage.getItem("arcadeSession") || "null"); } catch (e) { s = null; }
+    if (!s || !s.name) return;
+    playerName = String(s.name).toUpperCase().substring(0, 12);
+    var db = storageLoad();
+    var user = db ? db.users[playerName] : null;
+    if (s.auth && user && user.pw === s.auth) {
+        isGuest = false;
+        applyProfile(user);
+        setStatus("\u2713 LOGGED IN - PROGRESS SAVED", "#34d399");
+    } else {
+        setStatus("NO PASSWORD - PROGRESS NOT SAVED", "#9ca3af");
+    }
+}
+
 function login() {
     isGuest = true;
     playerName = "GUEST";
     bestScores = {};
     setStatus("GUEST - PROGRESS NOT SAVED", "#9ca3af");
+    // On the website the start page already asked for the name (and password), so no prompts here
+    if (ON_WEBSITE) { siteLogin(); return; }
 
     var input = prompt("Enter your Player Name Tag:\n(Leave blank to play as a guest)");
     if (!input || input.trim() === "") return;

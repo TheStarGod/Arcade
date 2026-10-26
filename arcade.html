@@ -52,10 +52,40 @@ h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(36px
 .door > *{position:relative}
 .foot{margin:0;color:var(--dim);font-size:13px}
 @media (prefers-reduced-motion:reduce){.door{transition:none}}
+
+/* player chip + sign-in panel */
+.top{position:fixed;z-index:3;top:max(12px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));display:flex;gap:8px;align-items:center;
+  font-weight:700;font-size:13px;letter-spacing:.06em;color:var(--dim);background:rgba(10,10,30,.7);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:6px 6px 6px 14px}
+.top b{color:#fbcfe8}
+.top button,.linky{font:700 12px var(--font-ui);letter-spacing:.06em;color:var(--ink);background:rgba(255,255,255,.1);border:0;border-radius:999px;padding:5px 11px;cursor:pointer}
+#signin{position:fixed;z-index:4;inset:0;display:grid;place-items:center;padding:20px;background:rgba(3,3,12,.82);backdrop-filter:blur(4px)}
+#signin form{width:min(420px,100%);display:grid;gap:14px;padding:26px 24px;border-radius:16px;background:linear-gradient(170deg,#1c0b33,#0d0820);
+  border:2px solid rgba(236,72,153,.45);box-shadow:0 0 50px rgba(168,85,247,.35);text-align:left}
+#signin h2{margin:0;font-family:var(--font-display);font-weight:400;font-size:28px;color:#fbcfe8}
+#signin p{margin:0;color:var(--dim);font-size:14px;line-height:1.45}
+#signin label{display:grid;gap:6px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+#signin input{font:700 18px var(--font-ui);letter-spacing:.06em;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:11px 12px}
+#signin input:focus{outline:2px solid var(--arcade);outline-offset:1px}
+#pname{text-transform:uppercase}
+#signin .err{min-height:18px;color:#fda4af;font-size:13px;font-weight:700}
+#signin .row{display:flex;gap:10px;flex-wrap:wrap}
+#signin .go2{flex:1 1 160px;font:400 18px var(--font-display);color:#2a0a3d;background:linear-gradient(180deg,#fbcfe8,var(--arcade));border:0;border-radius:10px;padding:12px;cursor:pointer}
+#signin .ghost{flex:1 1 120px;font:700 14px var(--font-ui);color:var(--ink);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:12px;cursor:pointer}
 </style>
 </head>
 <body>
 <canvas id="stars" aria-hidden="true"></canvas>
+<div class="top" id="chip" hidden><span>Welcome, <b id="chip-name"></b></span><button type="button" id="change">Change</button></div>
+<div id="signin" hidden>
+  <form id="sform" autocomplete="off">
+    <h2>Who's playing?</h2>
+    <p>Pick a player name tag for the whole site. Add a password if you want the Arcade to save your best scores (don't use a real password).</p>
+    <label for="pname">Player name tag<input id="pname" maxlength="12" placeholder="e.g. PRANAV" required></label>
+    <label for="ppw">Password (optional)<input id="ppw" type="password" maxlength="40" placeholder="Saves your scores"></label>
+    <div class="err" id="serr" role="alert"></div>
+    <div class="row"><button class="go2" type="submit">LET'S PLAY</button><button class="ghost" type="button" id="guest">Play as guest</button></div>
+  </form>
+</div>
 <main>
   <div class="wrap">
     <p class="eyebrow">Pranav &amp; Advik present</p>
@@ -79,6 +109,7 @@ h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(36px
 </main>
 <script>
 addEventListener('keydown', function (e) {
+  if (!document.getElementById('signin').hidden) return;
   if (e.key === '1') location.href = 'arcade-games.html';
   if (e.key === '2') location.href = 'storm-duel.html';
 });
@@ -98,6 +129,44 @@ addEventListener('keydown', function (e) {
     requestAnimationFrame(draw);
   }
   draw();
+})();
+
+/* One sign-in for the whole site. Uses the same accounts the Arcade already saves in this browser. */
+(function () {
+  var STORE = 'codehsArcade_v2', SESSION = 'arcadeSession';
+  function hashPassword(name, pw){ var s = name + '|' + pw + '|arcade-salt', h = 2166136261;
+    for (var i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h.toString(16); }
+  function load(k, d){ try { var v = JSON.parse(localStorage.getItem(k) || 'null'); return v || d; } catch (e){ return d; } }
+  function save(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e){ return false; } }
+  var box = document.getElementById('signin'), err = document.getElementById('serr');
+  var nameIn = document.getElementById('pname'), pwIn = document.getElementById('ppw');
+  function showChip(){
+    var s = load(SESSION, null);
+    document.getElementById('chip').hidden = false;
+    document.getElementById('chip-name').textContent = s && s.name ? s.name + (s.auth ? '' : ' (not saving)') : 'GUEST';
+  }
+  function open(){ var s = load(SESSION, null); nameIn.value = s && s.name ? s.name : ''; pwIn.value = ''; err.textContent = ''; box.hidden = false; nameIn.focus(); }
+  function done(sess){ save(SESSION, sess); box.hidden = true; showChip(); if (location.hash === '#player') history.replaceState(null, '', location.pathname); }
+  document.getElementById('sform').addEventListener('submit', function (e){
+    e.preventDefault();
+    var name = nameIn.value.trim().toUpperCase().substring(0, 12), pw = pwIn.value;
+    if (!name){ err.textContent = 'Type a name tag, or choose Play as guest.'; return; }
+    var db = load(STORE, {users:{}}); if (!db.users) db.users = {};
+    var user = db.users[name];
+    if (user){
+      if (!pw) return done({name:name, auth:null});
+      if (hashPassword(name, pw) !== user.pw){ err.textContent = 'Wrong password for ' + name + '. Try again, or leave it blank to play without saving.'; return; }
+      return done({name:name, auth:user.pw});
+    }
+    if (!pw) return done({name:name, auth:null});
+    db.users[name] = {pw:hashPassword(name, pw), best:{}, prefs:{}};
+    save(STORE, db);
+    done({name:name, auth:db.users[name].pw});
+  });
+  document.getElementById('guest').addEventListener('click', function (){ done({name:'', auth:null}); });
+  document.getElementById('change').addEventListener('click', open);
+  var s = load(SESSION, null);
+  if (!s || location.hash === '#player') open(); else showChip();
 })();
 </script>
 </body>
