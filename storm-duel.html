@@ -291,7 +291,7 @@ a.ghostbtn{text-decoration:none;text-align:center;display:inline-block}
         </div>
       </div>
       <div class="keys" id="keys-desktop">
-        <div><span>Move · Jump</span><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> <kbd data-bind="jump">Space</kbd></span></div>
+        <div><span>Move · Jump</span><span><kbd data-bind="forward">W</kbd><kbd data-bind="left">A</kbd><kbd data-bind="back">S</kbd><kbd data-bind="right">D</kbd> <kbd data-bind="jump">Space</kbd></span></div>
         <div><span>Shoot or place / Aim</span><span>Left / Right click</span></div>
         <div><span>Axe · Items</span><span><kbd>1</kbd> · <kbd>2</kbd>–<kbd>6</kbd> or wheel</span></div>
         <div><span>Wall · Floor</span><span><kbd data-bind="wall">Q</kbd> <kbd data-bind="floor">F</kbd></span></div>
@@ -370,17 +370,25 @@ const DEFAULTS = {sens:1, adsMult:.6, invertY:false, xhair:'#ffffff', instantBui
   lookTop:'#3b6fe0', lookPants:'#34466e', lookShoe:'#2f6bff', lookHair:'#4a2e1c', lookSkin:'#f0c49a', lookHat:false, botTop:'#d23a48',
   startWood:300, freeBuild:false, buildHp:1, startShield:100, dmgMult:1, stormOn:true, stormSpeed:1, botSpeed:1,
   toggleAim:false, autoReload:true, alwaysSprint:false, wheelSwap:true, hudScale:1, showFps:false,
-  binds:{wall:'KeyQ', floor:'KeyF', ramp:'KeyE', cone:'KeyC', edit:'KeyG', reload:'KeyR', jump:'Space'}};
+  buildSens:1, editSens:1,
+  binds:{forward:'KeyW', back:'KeyS', left:'KeyA', right:'KeyD', jump:'Space', sprint:'ShiftLeft',
+    fire:'Mouse0', aim:'Mouse2', reload:'KeyR', wall:'KeyQ', floor:'KeyF', ramp:'KeyE', cone:'KeyC', edit:'KeyG',
+    slot1:'Digit1', slot2:'Digit2', slot3:'Digit3', slot4:'Digit4', slot5:'Digit5', slot6:'Digit6'}};
 function loadSettings(){
   try { const s = JSON.parse(localStorage.getItem(SKEY) || 'null'); if (s) return {...DEFAULTS, ...s, binds:{...DEFAULTS.binds, ...(s.binds || {})}}; } catch (e){}
   return JSON.parse(JSON.stringify(DEFAULTS));
 }
 let settings = loadSettings();
 function saveSettings(){ try { localStorage.setItem(SKEY, JSON.stringify(settings)); } catch (e){} }
-const keyName = code => !code ? '—' : code === 'Space' ? 'Space' : code.startsWith('Key') ? code.slice(3) : code.startsWith('Digit') ? code.slice(5)
+const MOUSE_NAMES = {Mouse0:'Left click', Mouse1:'Middle click', Mouse2:'Right click', Mouse3:'Mouse 4', Mouse4:'Mouse 5'};
+const ARROWS = {ArrowUp:'↑', ArrowDown:'↓', ArrowLeft:'←', ArrowRight:'→'};
+const keyName = code => !code ? '—' : MOUSE_NAMES[code] || ARROWS[code] || code === 'Space' ? (MOUSE_NAMES[code] || ARROWS[code] || 'Space') : code.startsWith('Key') ? code.slice(3) : code.startsWith('Digit') ? code.slice(5)
   : code.startsWith('Numpad') ? 'Num ' + code.slice(6) : code.replace(/(Left|Right)$/, '');
-const RESERVED = ['KeyW','KeyA','KeyS','KeyD','Digit1','Digit2','Digit3','Digit4','Digit5','Digit6','Escape','ShiftLeft','ShiftRight'];
-const BIND_LABELS = {wall:'Build wall', floor:'Build floor', ramp:'Build ramp', cone:'Build cone', edit:'Edit build', reload:'Reload', jump:'Jump'};
+const RESERVED = ['Escape'];  // Esc always pauses
+const BIND_LABELS = {forward:'Move forward', back:'Move back', left:'Move left', right:'Move right', jump:'Jump', sprint:'Sprint',
+  fire:'Shoot, place or select tiles', aim:'Aim (resets an edit)', reload:'Reload',
+  wall:'Build wall', floor:'Build floor', ramp:'Build ramp', cone:'Build cone', edit:'Edit build (press again to confirm)',
+  slot1:'Build Axe', slot2:'Storm Rifle', slot3:'Pump Shotgun', slot4:'Shockwave', slot5:'Bandages', slot6:'Shield Potion'};
 
 const DIFF = {
   easy:   {label:'Easy',   spread:.055, moveSpread:.05,  react:.6,  build:.3,  burst:3, pause:.75, head:.08, heal:.5},
@@ -941,11 +949,12 @@ function updateEdit(){
   ray.set(camera.position, camFwd); ray.near = 0; ray.far = camNear + 12;
   const h = ray.intersectObjects(edit.planes, false)[0];
   edit.hover = h ? h.object.userData.tile : -1;
-  if (firing && edit.hover >= 0){
+  const fireNow = firing || fireLatch; fireLatch = false;
+  if (fireNow && edit.hover >= 0){
     if (edit.paint === null) edit.paint = !edit.sel.has(edit.hover);
     if (edit.paint) edit.sel.add(edit.hover); else edit.sel.delete(edit.hover);
   }
-  if (!firing) edit.paint = null;
+  if (!fireNow) edit.paint = null;
   for (const p of edit.planes){
     const i = p.userData.tile, s = edit.sel.has(i), hv = i === edit.hover;
     p.material = s ? (hv ? edMats.selHover : edMats.sel) : (hv ? edMats.hover : edMats.base);
@@ -1344,7 +1353,7 @@ function updateBot(dt){
 
 /* ---------- input & modes ---------- */
 const keys = {};
-let firing = false, aiming = false, running = false, paused = false, hadLock = false;
+let firing = false, fireLatch = false, aiming = false, running = false, paused = false, hadLock = false;
 let mode = 'combat', piece = 'wall', placeCd = 0;
 const touchMove = {x:0, y:0};
 function enterCombat(){
@@ -1368,26 +1377,48 @@ function enterBuild(p){
 }
 function bindFor(code){ for (const k in settings.binds) if (settings.binds[k] === code) return k; return null; }
 let rebinding = null;
-addEventListener('keydown', e => {
-  if (rebinding){ e.preventDefault(); e.stopPropagation(); finishRebind(e.code); return; }
-  if (!running || paused) return;
-  const act = bindFor(e.code);
-  if (['Space','ArrowUp','ArrowDown','Tab'].includes(e.code) || act) e.preventDefault();
-  keys[e.code] = true;
-  if (e.repeat) return;
-  if (act === 'wall' || act === 'floor' || act === 'ramp' || act === 'cone') enterBuild(act);
+const held = act => !!keys[settings.binds[act]];
+/* Every key and mouse button goes through press()/release(), so any action can sit on any button */
+function press(code){
+  keys[code] = true;
+  const act = bindFor(code);
+  if (!act) return false;
+  if (act === 'fire'){ firing = true; fireLatch = true; placeCd = 0; }
+  else if (act === 'aim'){
+    if (mode === 'edit') edit.sel.clear();
+    else if (mode === 'combat') aiming = settings.toggleAim ? !aiming : true;
+  }
+  else if (act === 'wall' || act === 'floor' || act === 'ramp' || act === 'cone') enterBuild(act);
   else if (act === 'edit'){
     if (mode === 'edit') confirmEdit();
     else if (startEdit()) edit.heldKey = true;
   }
   else if (act === 'reload'){ if (mode === 'combat') startReload(player); }
-  const n = /^Digit([1-6])$/.exec(e.code); if (n) setSlot(+n[1] - 1);
-  if (e.code === 'Escape' && !document.pointerLockElement) pause();
+  else if (act.startsWith('slot')) setSlot(+act.slice(4) - 1);
+  return true;
+}
+function release(code){
+  keys[code] = false;
+  const act = bindFor(code);
+  if (act === 'fire') firing = false;
+  else if (act === 'aim' && !settings.toggleAim) aiming = false;
+  else if (act === 'edit' && settings.editRelease && mode === 'edit' && edit.heldKey) confirmEdit();
+}
+addEventListener('keydown', e => {
+  if (rebinding){ e.preventDefault(); e.stopPropagation(); finishRebind(e.code); return; }
+  if (!running || paused) return;
+  if (e.code === 'Escape'){ if (!document.pointerLockElement) pause(); return; }
+  const act = bindFor(e.code);
+  if (['Space','ArrowUp','ArrowDown','Tab'].includes(e.code) || act) e.preventDefault();
+  if (e.repeat) return;
+  press(e.code);
 });
-addEventListener('keyup', e => {
-  keys[e.code] = false;
-  if (running && !paused && settings.editRelease && bindFor(e.code) === 'edit' && mode === 'edit' && edit.heldKey) confirmEdit();
-});
+addEventListener('keyup', e => { if (running && !paused) release(e.code); else keys[e.code] = false; });
+// Mouse buttons can be bound too. Buttons 4 and 5 normally mean back/forward in the browser, so block that.
+addEventListener('mousedown', e => {
+  if (rebinding && !e.target.closest('.bindbtn')){ e.preventDefault(); finishRebind('Mouse' + e.button); }
+}, true);
+['mouseup','auxclick'].forEach(t => addEventListener(t, e => { if (e.button === 3 || e.button === 4) e.preventDefault(); }));
 canvas.addEventListener('wheel', e => {
   if (!running || paused || !settings.wheelSwap) return;
   e.preventDefault();
@@ -1397,10 +1428,13 @@ document.querySelectorAll('#hotbar .slot').forEach(el => el.addEventListener('cl
 document.querySelectorAll('#buildbar .slot').forEach(el => el.addEventListener('click', () => { if (running && !paused) enterBuild(el.dataset.p); }));
 const SENS = .0022;
 function look(dx, dy, s){ player.yaw -= dx*s; player.pitch = clamp(player.pitch - dy*s*(settings.invertY ? -1 : 1), -1.25, 1.25); }
-const lookScale = () => SENS * settings.sens * (aiming ? settings.adsMult : 1);
+const modeSens = () => mode === 'edit' ? settings.editSens : mode === 'build' ? settings.buildSens : (aiming ? settings.adsMult : 1);
+const lookScale = () => SENS * settings.sens * modeSens();
 document.addEventListener('mousemove', e => {
   if (!running || paused || coarse) return;
-  if (document.pointerLockElement === canvas || e.buttons) look(e.movementX || 0, e.movementY || 0, lookScale());
+  const mx = e.movementX || 0, my = e.movementY || 0;
+  if (Math.abs(mx) > 250 || Math.abs(my) > 250) return;  // ignore the jump browsers report when the mouse is captured
+  if (document.pointerLockElement === canvas || e.buttons) look(mx, my, lookScale());
 });
 function lock(){
   if (coarse) return;
@@ -1409,13 +1443,10 @@ function lock(){
 canvas.addEventListener('mousedown', e => {
   if (!running || paused || coarse) return;
   if (document.pointerLockElement !== canvas) lock();
-  if (e.button === 0){ firing = true; placeCd = 0; }
-  if (e.button === 2){
-    if (mode === 'edit'){ edit.sel.clear(); }
-    else if (mode === 'combat') aiming = settings.toggleAim ? !aiming : true;
-  }
+  if (e.button > 2) e.preventDefault();
+  press('Mouse' + e.button);
 });
-addEventListener('mouseup', e => { if (e.button === 0) firing = false; if (e.button === 2 && !settings.toggleAim) aiming = false; });
+addEventListener('mouseup', e => { if (running) release('Mouse' + e.button); });
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('pointerlockchange', () => {
   if (document.pointerLockElement === canvas) hadLock = true;
@@ -1436,14 +1467,14 @@ if (coarse){
         if (l > m){ dx *= m/l; dy *= m/l; }
         knob.style.transform = `translate(${dx}px,${dy}px)`; touchMove.x = dx/m; touchMove.y = -dy/m;
       } else if (t.identifier === lookId && running && !paused){
-        look(t.clientX - lx, t.clientY - ly, .005 * settings.sens * (aiming ? settings.adsMult : 1)); lx = t.clientX; ly = t.clientY;
+        look(t.clientX - lx, t.clientY - ly, .005 * settings.sens * modeSens()); lx = t.clientX; ly = t.clientY;
       }
     }
   }, {passive:true});
   const endT = e => { for (const t of e.changedTouches){ if (t.identifier === stickId){ stickId = null; touchMove.x = touchMove.y = 0; knob.style.transform = ''; } if (t.identifier === lookId) lookId = null; } };
   addEventListener('touchend', endT); addEventListener('touchcancel', endT);
   const btn = (id, down, up) => { const el = $(id); el.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); if (running && !paused) down(el); }, {passive:false}); if (up) el.addEventListener('touchend', e => { e.preventDefault(); up(el); }, {passive:false}); };
-  btn('t-fire', () => { firing = true; placeCd = 0; }, () => firing = false);
+  btn('t-fire', () => { firing = true; fireLatch = true; placeCd = 0; }, () => firing = false);
   btn('t-jump', () => { if (player.onGround) player.vel.y = 9; });
   btn('t-wall', () => enterBuild('wall'));
   btn('t-ramp', () => enterBuild('ramp'));
@@ -1477,6 +1508,8 @@ const SCHEMA = [
   {section:'Mouse & aim'},
   {id:'sens', label:'Look sensitivity', type:'range', min:.2, max:3, step:.05, fmt:v => v.toFixed(2)},
   {id:'adsMult', label:'Aiming sensitivity', type:'range', min:.2, max:1.5, step:.05, fmt:pct},
+  {id:'buildSens', label:'Build mode sensitivity', type:'range', min:.2, max:2, step:.05, fmt:pct},
+  {id:'editSens', label:'Edit mode sensitivity', type:'range', min:.2, max:2, step:.05, fmt:pct},
   {id:'invertY', label:'Invert up and down', type:'toggle'},
   {id:'toggleAim', label:'Right-click toggles aim instead of hold', type:'toggle'},
   {id:'xhair', label:'Crosshair color', type:'swatch', options:['#ffffff','#ffd84a','#4fe08a','#4cdcff','#ff5ec8']},
@@ -1544,14 +1577,14 @@ function renderSettings(){
 }
 function startRebind(action){
   rebinding = action;
-  const b = $('bind-' + action); b.classList.add('wait'); b.textContent = 'Press a key';
-  $('set-note').textContent = 'Press the key you want. Esc cancels.';
+  const b = $('bind-' + action); b.classList.add('wait'); b.textContent = 'Press…';
+  $('set-note').textContent = 'Press a key or mouse button. Esc cancels.';
 }
 function finishRebind(code){
   const action = rebinding; rebinding = null;
   const b = $('bind-' + action); b.classList.remove('wait');
   if (code === 'Escape'){ b.textContent = keyName(settings.binds[action]); $('set-note').textContent = ''; return; }
-  if (RESERVED.includes(code)){ b.textContent = keyName(settings.binds[action]); $('set-note').textContent = `${keyName(code)} is used for moving, sprinting or items. Pick another key.`; return; }
+  if (RESERVED.includes(code)){ b.textContent = keyName(settings.binds[action]); $('set-note').textContent = 'Esc is always pause. Pick another key.'; return; }
   const other = bindFor(code);
   if (other && other !== action){ settings.binds[other] = settings.binds[action]; $('bind-' + other).textContent = keyName(settings.binds[other]); $('set-note').textContent = `Swapped with ${BIND_LABELS[other]}.`; }
   else $('set-note').textContent = '';
@@ -1714,27 +1747,29 @@ $('quit').addEventListener('click', toMenu);
 function updatePlayer(dt){
   const p = player;
   let f = 0, s = 0;
-  if (keys.KeyW || keys.ArrowUp) f += 1; if (keys.KeyS || keys.ArrowDown) f -= 1;
-  if (keys.KeyD) s += 1; if (keys.KeyA) s -= 1;
+  if (held('forward')) f += 1; if (held('back')) f -= 1;
+  if (held('right')) s += 1; if (held('left')) s -= 1;
   f += touchMove.y; s += touchMove.x;
   const fx = -Math.sin(p.yaw), fz = -Math.cos(p.yaw), rx = Math.cos(p.yaw), rz = -Math.sin(p.yaw);
   let wx = fx*f + rx*s, wz = fz*f + rz*s; const l = Math.hypot(wx, wz);
   if (l > 1){ wx /= l; wz /= l; }
-  let speed = aiming ? 4.6 : (settings.alwaysSprint || keys.ShiftLeft || keys.ShiftRight) && f > 0 ? 8.6 : 6.8;
+  let speed = aiming ? 4.6 : (settings.alwaysSprint || held('sprint')) && f > 0 ? 8.6 : 6.8;
   if (p.using) speed = Math.min(speed, 4);
-  if (keys[settings.binds.jump] && p.onGround) p.vel.y = 9;
+  if (held('jump') && p.onGround) p.vel.y = 9;
   stepChar(p, wx, wz, speed, dt);
 
   if (mode === 'build'){
     const plan = planBuild(p, piece);
     showGhost(plan);
-    if (firing){
+    const fireNow = firing || fireLatch; fireLatch = false;
+    if (fireNow){
       placeCd -= dt;
       if (placeCd <= 0){ if (plan.valid) placeBuild(p, plan); else if (!freeWood() && p.wood < 10) toast('Not enough wood'); placeCd = settings.turbo; }
     }
   } else if (mode === 'edit'){
     updateEdit();
-  } else if (firing && !p.using){
+  } else if ((firing || fireLatch) && !p.using){
+    fireLatch = false;
     const key = SLOTS[p.slot];
     if (GUNS[key]) playerShoot();
     else if (key === 'axe') playerSwing();

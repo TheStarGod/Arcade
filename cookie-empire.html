@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cookie Empire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kavoon&family=Merriweather+Sans:wght@400;700;800&display=swap">
+<style>
+/* Layout: three columns like a bakery counter — the big cookie on the left, your buildings at work in the middle, the store on the right. Stacks to one column on phones. */
+:root{
+  --bg:#1f3a5c; --bg2:#173052; --panel:rgba(8,16,32,.55); --line:rgba(255,255,255,.14);
+  --ink:#fff8ec; --dim:#c8d3e6; --gold:#ffd25a; --good:#7cf29a; --bad:#ff8080; --dough:#c9852e;
+  --font-display:"Kavoon","Georgia",serif; --font-ui:"Merriweather Sans","Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:radial-gradient(circle at 20% 10%,#2f5687,var(--bg) 45%,var(--bg2));color:var(--ink);font-family:var(--font-ui);font-size:14px;overflow:hidden}
+body.theme-night{--bg:#141626;--bg2:#0b0c16;background:radial-gradient(circle at 20% 10%,#2a2d4a,#141626 45%,#0b0c16)}
+body.theme-rose{--bg:#5c2041;--bg2:#3a1229;background:radial-gradient(circle at 20% 10%,#8a3a64,#5c2041 45%,#3a1229)}
+body.theme-mint{--bg:#1d4a43;--bg2:#12322d;background:radial-gradient(circle at 20% 10%,#2e7366,#1d4a43 45%,#12322d)}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+#top{height:44px;display:flex;align-items:center;gap:10px;padding:0 max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px));background:rgba(0,0,0,.35);border-bottom:1px solid var(--line)}
+#top a,#top button{font-weight:700;font-size:13px;text-decoration:none;color:var(--ink);background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap}
+#top h1{margin:0 auto 0 4px;font-family:var(--font-display);font-weight:400;font-size:22px;letter-spacing:.02em;white-space:nowrap}
+#news{flex:1;min-width:0;overflow:hidden;white-space:nowrap;color:var(--dim);font-size:13px;font-style:italic}
+
+#game{height:calc(100% - 44px);display:grid;grid-template-columns:minmax(280px,1.1fr) minmax(0,1.4fr) minmax(300px,1fr)}
+#left{position:relative;overflow:hidden;border-right:4px solid rgba(0,0,0,.35);background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.08),transparent 60%)}
+#cv{position:absolute;inset:0;width:100%;height:100%;cursor:pointer}
+#bank{position:absolute;top:14px;left:0;right:0;text-align:center;pointer-events:none;text-shadow:0 2px 4px rgba(0,0,0,.6)}
+#bakery{pointer-events:auto;cursor:pointer;display:inline-block;font-family:var(--font-display);font-size:22px;padding:2px 10px;border-radius:8px;background:rgba(0,0,0,.3);border:0}
+#count{font-family:var(--font-display);font-size:30px;margin-top:6px;line-height:1.1}
+#cps{font-size:13px;color:var(--dim)}
+#buffs{position:absolute;bottom:12px;left:12px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+.buff{background:rgba(0,0,0,.55);border:1px solid var(--gold);color:var(--gold);border-radius:8px;padding:4px 8px;font-size:12px;font-weight:800}
+
+#middle{overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:rgba(0,0,0,.12)}
+.strip{position:relative;flex-shrink:0;min-height:64px;border-radius:8px;padding:6px 10px 6px 132px;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,.12));border:1px solid var(--line);overflow:hidden}
+.strip h3{position:absolute;left:10px;top:8px;margin:0;font-size:11px;letter-spacing:.04em;color:var(--dim);width:116px;line-height:1.3}
+.strip h3 b{display:block;font-family:var(--font-display);font-weight:400;font-size:17px;line-height:1.1;margin-bottom:2px;color:var(--ink);letter-spacing:0;text-transform:none}
+.strip .units{font-size:22px;line-height:1.3;display:flex;flex-wrap:wrap;gap:2px}
+.strip .more{font-size:12px;color:var(--dim);font-weight:700}
+#middle .empty{color:var(--dim);text-align:center;padding:40px 10px;line-height:1.6}
+
+#store{overflow:auto;border-left:4px solid rgba(0,0,0,.35);background:rgba(0,0,0,.2);display:grid;align-content:start}
+.sec{padding:10px 12px;border-bottom:1px solid var(--line)}
+.sec h2{margin:0 0 8px;font-family:var(--font-display);font-weight:400;font-size:20px;display:flex;justify-content:space-between;align-items:center}
+#upgrades{display:flex;flex-wrap:wrap;gap:5px;min-height:10px}
+.up{width:46px;height:46px;border-radius:8px;border:2px solid rgba(255,255,255,.25);background:#3b2a19;display:grid;place-items:center;font-size:22px;cursor:pointer;position:relative;padding:0}
+.up small{position:absolute;bottom:1px;right:3px;font-size:9px;font-weight:800;color:var(--gold)}
+.up.cant{filter:grayscale(.7) brightness(.65)}
+.modes{display:flex;gap:4px}
+.modes button{font-size:12px;font-weight:800;padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.06);cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--gold);color:#2b1a00;border-color:var(--gold)}
+.bld{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;text-align:left;padding:8px 10px;border:0;border-bottom:1px solid rgba(255,255,255,.07);background:linear-gradient(90deg,rgba(201,133,46,.18),transparent);cursor:pointer}
+.bld:hover{background:linear-gradient(90deg,rgba(255,210,90,.28),rgba(255,255,255,.04))}
+.bld .ic{width:48px;height:48px;border-radius:10px;background:rgba(0,0,0,.3);display:grid;place-items:center;font-size:28px}
+.bld .nm{font-family:var(--font-display);font-size:19px;line-height:1.1}
+.bld .pr{font-size:13px;font-weight:800;color:var(--good)}
+.bld.cant .pr{color:var(--bad)}
+.bld.cant{opacity:.75}
+.bld .own{font-family:var(--font-display);font-size:30px;color:rgba(255,255,255,.35);min-width:40px;text-align:right}
+.bld.locked .nm,.bld.locked .ic{filter:brightness(0);opacity:.6}
+
+#tip{position:fixed;z-index:20;max-width:320px;padding:10px 12px;border-radius:10px;background:rgba(10,14,26,.96);border:1px solid var(--gold);pointer-events:none;font-size:13px;line-height:1.45;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+#tip b{font-family:var(--font-display);font-weight:400;font-size:17px}
+#tip .price{color:var(--good);font-weight:800}
+#tip q{display:block;color:var(--dim);font-style:italic;margin-top:4px}
+#tip q::before,#tip q::after{content:""}
+
+.golden{position:fixed;z-index:15;width:72px;height:72px;border:0;padding:0;border-radius:50%;cursor:pointer;background:radial-gradient(circle at 35% 30%,#fff7c2,#ffd25a 40%,#d99a16 75%,#9c6a08);box-shadow:0 0 30px rgba(255,210,90,.9);animation:gpulse 1.2s ease-in-out infinite}
+.golden::after{content:"";position:absolute;inset:18px;border-radius:50%;background:radial-gradient(circle,#b77d0c 0 18%,transparent 19%) 6px 4px/22px 22px}
+@keyframes gpulse{50%{transform:scale(1.12) rotate(8deg)}}
+.pop{position:fixed;z-index:16;pointer-events:none;font-weight:800;font-size:16px;color:#fff;text-shadow:0 2px 4px #000;transition:transform 1.2s ease-out,opacity 1.2s;white-space:nowrap}
+
+.overlay{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:16px;background:rgba(5,10,20,.75);overflow:auto}
+.card{width:min(640px,100%);max-height:min(860px,100%);display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:12px;padding:20px;border-radius:14px;background:#13223a;border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.card h2{margin:0;font-family:var(--font-display);font-weight:400;font-size:28px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.cbody{overflow:auto;min-height:0;padding-right:4px}
+.cbody h3{margin:14px 0 4px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.cbody h3:first-child{margin-top:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,240px);gap:12px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.row .ctl{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.row select{font:700 13px var(--font-ui);color:var(--ink);background:#0d1830;border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.row input[type=range]{flex:1;min-width:0;accent-color:var(--gold)}
+.row output{min-width:44px;text-align:right;color:var(--dim);font-weight:700}
+.switch{appearance:none;-webkit-appearance:none;width:44px;height:24px;border-radius:12px;background:rgba(255,255,255,.18);position:relative;cursor:pointer;margin:0}
+.switch::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch:checked{background:var(--gold)}
+.switch:checked::after{transform:translateX(20px)}
+.stats{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px}
+.stats span{color:var(--dim)}
+.achs{display:flex;flex-wrap:wrap;gap:5px}
+.ach{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;font-size:20px;background:rgba(255,255,255,.08);border:1px solid var(--line);cursor:help}
+.ach.no{filter:grayscale(1) brightness(.4)}
+.btn{font-weight:800;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.08);cursor:pointer}
+.btn.gold{background:linear-gradient(180deg,#ffe6a0,var(--gold));color:#2b1a00;border:0}
+.btn.red{background:#7a1f2a;border-color:#ff8080}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+#dev{position:fixed;z-index:25;right:max(12px,env(safe-area-inset-right,0px));bottom:max(12px,env(safe-area-inset-bottom,0px));width:230px;padding:10px;border-radius:12px;background:rgba(40,0,40,.92);border:2px solid #ff6bd6;display:grid;gap:6px}
+#dev h3{margin:0;font-size:13px;letter-spacing:.12em;color:#ff9be6}
+#dev button{font-size:12px;font-weight:800;padding:6px;border-radius:6px;border:1px solid #ff6bd6;background:rgba(255,107,214,.15);cursor:pointer}
+
+@media (max-width:900px){
+  body{overflow:auto}
+  #game{height:auto;grid-template-columns:1fr}
+  #left{height:62vh;min-height:360px;border-right:0}
+  #middle{max-height:none}
+  #store{border-left:0;overflow:visible}
+  #news{display:none}
+  .row{grid-template-columns:1fr}
+  .row .ctl{justify-content:flex-start}
+}
+@media (prefers-reduced-motion:reduce){.golden{animation:none}.pop{transition:opacity 1.2s}}
+</style>
+</head>
+<body>
+<header id="top">
+  <a href="arcade.html">&larr; Games</a>
+  <h1>Cookie Empire</h1>
+  <div id="news" aria-live="polite"></div>
+  <button type="button" id="b-stats">Stats</button>
+  <button type="button" id="b-opts">Options</button>
+</header>
+<main id="game">
+  <section id="left" aria-label="Big cookie">
+    <canvas id="cv"></canvas>
+    <div id="bank">
+      <button type="button" id="bakery" title="Rename your bakery">My bakery</button>
+      <div id="count" class="num">0 cookies</div>
+      <div id="cps" class="num">per second: 0</div>
+    </div>
+    <div id="buffs"></div>
+  </section>
+  <section id="middle" aria-label="Your buildings at work"></section>
+  <aside id="store" aria-label="Store">
+    <div class="sec"><h2>Upgrades <span class="modes" id="upmode"></span></h2><div id="upgrades"></div></div>
+    <div class="sec" style="padding-bottom:4px"><h2>Buildings
+      <span class="modes"><button type="button" id="m-buy" aria-pressed="true">Buy</button><button type="button" id="m-sell" aria-pressed="false">Sell</button>
+      <button type="button" data-n="1" aria-pressed="true">1</button><button type="button" data-n="10" aria-pressed="false">10</button><button type="button" data-n="100" aria-pressed="false">100</button></span></h2></div>
+    <div id="buildings"></div>
+  </aside>
+</main>
+<div id="tip" hidden></div>
+
+<div class="overlay" id="stats" hidden>
+  <div class="card"><h2>Stats <button class="btn" type="button" data-close>Close</button></h2><div class="cbody" id="stats-body"></div><div class="btnrow" id="ascend-row"></div></div>
+</div>
+<div class="overlay" id="opts" hidden>
+  <div class="card"><h2>Options <button class="btn" type="button" data-close>Close</button></h2><div class="cbody" id="opts-body"></div>
+    <div class="btnrow"><button class="btn" type="button" id="save-now">Save now</button><button class="btn red" type="button" id="wipe">Wipe save…</button><span id="opt-note" style="align-self:center;color:var(--gold);font-weight:700"></span></div></div>
+</div>
+<div class="overlay" id="confirm" hidden>
+  <div class="card" style="width:min(420px,100%);grid-template-rows:auto auto auto"><h2 id="cf-title">Are you sure?</h2><p id="cf-text" style="margin:0;color:var(--dim);line-height:1.5"></p>
+    <div class="btnrow"><button class="btn red" type="button" id="cf-yes">Yes</button><button class="btn" type="button" id="cf-no">Cancel</button></div></div>
+</div>
+<div id="dev" hidden>
+  <h3>OPEN SESAME · DEV TOOLS</h3>
+  <button type="button" data-dev="x1000">Cookies × 1000</button>
+  <button type="button" data-dev="golden">Spawn golden cookie</button>
+  <button type="button" data-dev="frenzy">Frenzy now</button>
+  <button type="button" data-dev="click">Click frenzy now</button>
+  <button type="button" data-dev="close">Hide panel</button>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+/* options and save keys first: number formatting depends on them */
+/* ---------- numbers ---------- */
+const WORDS = ['million','billion','trillion','quadrillion','quintillion','sextillion','septillion','octillion','nonillion','decillion','undecillion','duodecillion','tredecillion','quattuordecillion','quindecillion'];
+function fmt(n, whole){
+  if (!isFinite(n)) return 'Infinity';
+  if (n < 0) return '-' + fmt(-n, whole);
+  if (O && O.format === 'sci' && n >= 1e6) return n.toExponential(3).replace('e+', 'e');
+  if (n < 1e6){
+    if (whole || n >= 1000 || n === Math.floor(n)) return Math.floor(n).toLocaleString('en-US');
+    return n.toFixed(1);
+  }
+  const e = Math.floor(Math.log10(n)/3)*3, i = e/3 - 2;
+  if (O && O.format === 'full' || i >= WORDS.length) return Math.floor(n).toLocaleString('en-US');
+  return (n/Math.pow(10, e)).toFixed(3) + ' ' + WORDS[i];
+}
+
+const SAVE = 'cookie-empire-save-v1', OPT = 'cookie-empire-options-v1';
+function fresh(){
+  return {cookies:0, baked:0, allTime:0, hand:0, clicks:0, goldClicks:0, own:Object.fromEntries(B.map(b => [b.key, 0])), ups:[], ach:[],
+    name:siteName ? siteName.charAt(0) + siteName.slice(1).toLowerCase() : '', named:false, sesame:false, prestige:0, ascensions:0, start:Date.now(), saved:Date.now(), playMs:0};
+}
+const OPT_DEFAULTS = {format:'short', goldFreq:1, speed:1, clickMult:1, particles:true, numbers:true, news:true, sound:true, volume:.6, cookieStyle:'classic', milk:'plain', theme:'blue', offline:0, autosave:30};
+let O = {...OPT_DEFAULTS};
+try { O = {...OPT_DEFAULTS, ...JSON.parse(localStorage.getItem(OPT) || '{}')}; } catch (e){}
+const siteName = (() => { try { const s = JSON.parse(localStorage.getItem('arcadeSession') || 'null'); return s && s.name ? String(s.name) : ''; } catch (e){ return ''; } })();
+
+/* ---------- buildings: base price and base cookies per second ---------- */
+const B = [
+  {key:'cursor',  name:'Cursor',        icon:'👆', cost:15,     cps:.1,      desc:'Taps the cookie for you every ten seconds.'},
+  {key:'grandma', name:'Grandma',       icon:'👵', cost:100,    cps:1,       desc:'Bakes a fresh batch whenever you visit. Which is never.'},
+  {key:'farm',    name:'Farm',          icon:'🌾', cost:1100,   cps:8,       desc:'Grows cookie plants from cookie seeds.'},
+  {key:'mine',    name:'Mine',          icon:'⛏️', cost:12000,  cps:47,      desc:'Digs up cookie dough and chocolate chunks.'},
+  {key:'factory', name:'Factory',       icon:'🏭', cost:130000, cps:260,     desc:'Turns out cookies by the conveyor belt.'},
+  {key:'bank',    name:'Bank',          icon:'🏦', cost:1.4e6,  cps:1400,    desc:'Earns interest on your cookie savings.'},
+  {key:'temple',  name:'Temple',        icon:'🛕', cost:2e7,    cps:7800,    desc:'Full of ancient cookie recipes. Possibly cursed.'},
+  {key:'wizard',  name:'Wizard Tower',  icon:'🧙', cost:3.3e8,  cps:44000,   desc:'Summons cookies with magic words and a lot of flour.'},
+  {key:'ship',    name:'Shipment',      icon:'🚀', cost:5.1e9,  cps:260000,  desc:'Brings in cookies from the cookie planet.'},
+  {key:'lab',     name:'Alchemy Lab',   icon:'⚗️', cost:7.5e10, cps:1.6e6,   desc:'Turns gold into cookies. Worth it.'},
+  {key:'portal',  name:'Portal',        icon:'🌀', cost:1e12,   cps:1e7,     desc:'Opens a door to the cookie dimension. Do not look inside.'},
+  {key:'time',    name:'Time Machine',  icon:'⏳', cost:1.4e13, cps:6.5e7,   desc:'Brings back cookies before anyone ate them.'},
+  {key:'anti',    name:'Antimatter Oven', icon:'⚛️', cost:1.7e14, cps:4.3e8, desc:'Bakes cookies out of the empty bits of space.'},
+  {key:'prism',   name:'Prism',         icon:'🔮', cost:2.1e15, cps:2.9e9,   desc:'Turns light itself into cookies.'},
+  {key:'luck',    name:'Chancemaker',   icon:'🍀', cost:2.6e16, cps:2.1e10,  desc:'Generates cookies out of thin air through sheer luck.'}
+];
+const TIER_AT = [1, 5, 25, 50, 100, 150, 200, 250];
+const TIER_MULT = [10, 50, 500, 5e4, 5e6, 5e8, 5e11, 5e14];
+const ROMAN = ['I','II','III','IV','V','VI','VII','VIII','IX'];
+
+/* ---------- upgrades ---------- */
+const U = [];
+// cursor and clicking: the first three double, then "every other building adds to each tap"
+const CUR = [[1,100,'x2'],[1,500,'x2'],[10,1e4,'x2'],[25,1e5,'f0.1'],[50,1e7,'fx5'],[100,1e8,'fx10'],[150,1e9,'fx20'],[200,1e10,'fx20'],[250,1e13,'fx20']];
+const CUR_NAMES = ['Stronger Finger','Double Tap','Nimble Knuckles','Hundred Hands','Thousand Hands','Million Hands','Billion Hands','Trillion Hands','Infinite Hands'];
+CUR.forEach(([at, cost, eff], i) => U.push({id:'cur' + i, name:CUR_NAMES[i], icon:'👆', tier:ROMAN[i], cost,
+  desc: eff === 'x2' ? 'Cursors and clicking are twice as efficient.' : eff === 'f0.1' ? 'Cursors and clicking gain +0.1 cookies for each building that is not a cursor.' : `Multiplies the gain from Hundred Hands by ${eff.slice(2)}.`,
+  unlock: s => s.own.cursor >= at, apply: eff}));
+// every other building: x2 tiers
+const TIER_WORDS = ['Better','Sturdier','Faster','Golden','Cosmic','Legendary','Mythic','Infinite'];
+B.slice(1).forEach(b => TIER_AT.forEach((at, i) => U.push({id:b.key + i, name:`${TIER_WORDS[i]} ${b.name}s`, icon:b.icon, tier:ROMAN[i], cost:b.cost*TIER_MULT[i],
+  desc:`${b.name}s are twice as efficient.`, unlock: s => s.own[b.key] >= at, b:b.key})));
+// grandma helpers: grandma x2, the building gets +1% per N grandmas
+B.slice(2).forEach((b, i) => U.push({id:'gm_' + b.key, name:`Grandma at the ${b.name}`, icon:'👵', tier:b.icon, cost:b.cost*50,
+  desc:`Grandmas are twice as efficient. ${b.name}s gain +1% cookies per second for every ${i + 1} grandma${i ? 's' : ''}.`, unlock: s => s.own.grandma >= 1 && s.own[b.key] >= 15, gm:b.key, per:i + 1}));
+// click power: +1% of your cookies per second on every click
+const MOUSE_AT = [1000, 1e5, 1e7, 1e9, 1e11, 1e13, 1e15];
+const MOUSE_NAMES = ['Plastic Clicker','Iron Clicker','Titanium Clicker','Diamond Clicker','Laser Clicker','Plasma Clicker','Starlight Clicker'];
+MOUSE_AT.forEach((at, i) => U.push({id:'mouse' + i, name:MOUSE_NAMES[i], icon:'🖱️', tier:ROMAN[i], cost:at*50, desc:'Clicking gains +1% of your cookies per second.', unlock: s => s.hand >= at, clickPct:.01}));
+// cookie recipes: flat production boosts
+const FLAVORS = [['Butter cookies',2,999999],['Sugar cookies',2,5e6],['Oatmeal cookies',2,1e7],['Peanut butter cookies',3,5e7],['Coconut cookies',3,1e8],
+  ['White chocolate cookies',3,5e8],['Macadamia nut cookies',4,1e9],['Double-chip cookies',4,5e9],['Ginger snaps',4,1e10],['Shortbread',5,5e10],
+  ['Snickerdoodles',5,1e11],['Fortune cookies',5,5e11],['Caramel swirls',6,1e12],['Rainbow sprinkle cookies',6,1e13],['Galaxy cookies',8,1e14]];
+FLAVORS.forEach(([n, pct, cost], i) => U.push({id:'fl' + i, name:n, icon:'🍪', tier:'+' + pct + '%', cost, desc:`Cookie production +${pct}%.`, unlock: s => s.baked >= cost/5, flavor:pct/100}));
+// kittens: production grows with milk (achievements)
+const KITTENS = [['Kitten Helpers',.1,9e6,.5],['Kitten Workers',.125,9e9,1],['Kitten Engineers',.15,9e13,1.5],['Kitten Managers',.175,9e17,2],['Kitten Accountants',.2,9e21,2.5]];
+KITTENS.forEach(([n, f, cost, milk], i) => U.push({id:'kit' + i, name:n, icon:'🐱', tier:ROMAN[i], cost, desc:`You gain more cookies per second the more milk you have (×${f} per 100% milk).`, unlock: s => milkOf(s) >= milk, kitten:f}));
+// golden cookie upgrades
+U.push({id:'gold0', name:'Lucky Streak', icon:'✨', tier:'I', cost:7.77e8, desc:'Golden cookies appear twice as often and stay twice as long.', unlock: s => s.goldClicks >= 7, gold:'freq'});
+U.push({id:'gold1', name:'Golden Touch', icon:'✨', tier:'II', cost:7.77e10, desc:'Golden cookies appear twice as often again.', unlock: s => s.goldClicks >= 27, gold:'freq'});
+U.push({id:'gold2', name:'Long Luck', icon:'✨', tier:'III', cost:7.77e12, desc:'Golden cookie effects last twice as long.', unlock: s => s.goldClicks >= 77, gold:'dur'});
+const UBY = Object.fromEntries(U.map(u => [u.id, u]));
+
+/* ---------- achievements ---------- */
+const A = [];
+const BAKED = [[1,'Wake and bake'],[1e3,'Making some dough'],[1e5,'So baked right now'],[1e6,'Fledgling bakery'],[1e8,'Affluent bakery'],[1e9,'World-famous bakery'],
+  [1e10,'Cosmic bakery'],[1e11,'Galactic bakery'],[1e12,'Universal bakery'],[1e13,'Timeless bakery'],[1e14,'Infinite bakery'],[1e15,'Immortal bakery'],
+  [1e18,'Cookie singularity'],[1e21,'Cookie overload'],[1e24,'Out of numbers'],[1e30,'Beyond cookies']];
+BAKED.forEach(([n, name]) => A.push({id:'bk' + n, name, icon:'🍪', desc:`Bake ${fmt(n, true)} cookie${n > 1 ? 's' : ''} in one go.`, test: s => s.baked >= n}));
+const CPSA = [[1,'Casual baking'],[10,'Hardcore baking'],[100,'Steady stream'],[1000,'Cookie monsoon'],[1e4,'Cookie flood'],[1e5,'Cookie tsunami'],[1e6,'Cookie storm'],[1e7,'Cookie hurricane'],[1e9,'Cookie black hole'],[1e12,'Cookie big bang']];
+CPSA.forEach(([n, name]) => A.push({id:'cps' + n, name, icon:'⚡', desc:`Bake ${fmt(n, true)} cookie${n > 1 ? 's' : ''} per second.`, test: () => cps() >= n}));
+const HAND = [[1,'Clicktastic'],[1000,'Clickathlon'],[1e5,'Clickolympics'],[1e7,'Clickorama'],[1e9,'Clickasmic']];
+HAND.forEach(([n, name]) => A.push({id:'hand' + n, name, icon:'🖱️', desc:`Make ${fmt(n, true)} cookie${n > 1 ? 's' : ''} by clicking.`, test: s => s.hand >= n}));
+B.forEach(b => [[1,'First'],[50,'Lots of'],[100,'A hundred'],[200,'Two hundred']].forEach(([n, w]) =>
+  A.push({id:b.key + 'a' + n, name:`${w} ${b.name.toLowerCase()}${n > 1 ? 's' : ''}`, icon:b.icon, desc:`Own ${n} ${b.name.toLowerCase()}${n > 1 ? 's' : ''}.`, test: s => s.own[b.key] >= n})));
+[[1,'Golden cookie'],[7,'Lucky cookie'],[27,'A stroke of luck'],[77,'Fortune'],[777,'Leprechaun']].forEach(([n, name]) => A.push({id:'gc' + n, name, icon:'✨', desc:`Click ${n} golden cookie${n > 1 ? 's' : ''}.`, test: s => s.goldClicks >= n}));
+[[20,'Enhancer'],[50,'Augmenter'],[100,'Upgrader']].forEach(([n, name]) => A.push({id:'up' + n, name, icon:'⬆️', desc:`Buy ${n} upgrades.`, test: s => s.ups.length >= n}));
+A.push({id:'named', name:'God complex', icon:'🏷️', desc:'Give your bakery a name.', test: s => s.named});
+A.push({id:'sesame', name:'Something smells off', icon:'🔑', desc:'Find the secret word.', test: s => s.sesame});
+A.push({id:'asc', name:'Rebirth', icon:'👼', desc:'Ascend at least once.', test: s => s.ascensions >= 1});
+const milkOf = s => s.ach.length*.04;
+
+/* ---------- save state ---------- */
+let S = fresh();
+function load(){
+  try {
+    const d = JSON.parse(localStorage.getItem(SAVE) || 'null');
+    if (!d) return;
+    const f = fresh();
+    S = {...f, ...d, own:{...f.own, ...(d.own || {})}};
+    S.ups = S.ups.filter(id => UBY[id]);
+    S.name = String(S.name || '').replace(/'s$/, '');
+    // offline production, if turned on in options
+    const away = Math.max(0, (Date.now() - (S.saved || Date.now()))/1000);
+    if (O.offline > 0 && away > 5){ recalc(); const got = cps()*away*O.offline; earn(got); setTimeout(() => toast(`While you were away you baked ${fmt(got)} cookies.`), 600); }
+  } catch (e){ S = fresh(); }
+}
+function save(){ S.saved = Date.now(); try { localStorage.setItem(SAVE, JSON.stringify(S)); return true; } catch (e){ return false; } }
+function saveOpts(){ try { localStorage.setItem(OPT, JSON.stringify(O)); } catch (e){} }
+
+/* ---------- production math ---------- */
+let cache = {cps:0, click:1, per:{}};
+const has = id => S.ups.includes(id);
+const buffs = [];  // {kind, mult, t, max}
+function buffMult(kind){ let m = 1; for (const b of buffs) if (b.kind === kind) m *= b.mult; return m; }
+function recalc(){
+  const nonCursor = B.slice(1).reduce((a, b) => a + S.own[b.key], 0);
+  // cursor and click base
+  let curMult = 1, fingers = 0, fingerMult = 1;
+  CUR.forEach(([,, eff], i) => { if (!has('cur' + i)) return; if (eff === 'x2') curMult *= 2; else if (eff === 'f0.1') fingers = .1; else fingerMult *= +eff.slice(2); });
+  const fingerBonus = fingers*fingerMult*nonCursor;
+  const per = {};
+  per.cursor = .1*curMult + fingerBonus;
+  // grandma helpers
+  let gmMult = 1;
+  for (const u of U) if (u.gm && has(u.id)) gmMult *= 2;
+  for (const b of B.slice(1)){
+    let m = 1;
+    TIER_AT.forEach((_, i) => { if (has(b.key + i)) m *= 2; });
+    if (b.key === 'grandma') m *= gmMult;
+    const gu = UBY['gm_' + b.key];
+    if (gu && has(gu.id)) m *= 1 + .01*Math.floor(S.own.grandma/gu.per);
+    per[b.key] = b.cps*m;
+  }
+  let raw = 0;
+  for (const b of B) raw += per[b.key]*S.own[b.key];
+  let mult = 1;
+  for (const u of U) if (u.flavor && has(u.id)) mult += u.flavor;
+  mult *= 1 + S.prestige*.01;
+  const milk = milkOf(S);
+  for (const u of U) if (u.kitten && has(u.id)) mult *= 1 + milk*u.kitten;
+  mult *= O.speed;
+  const base = raw*mult;
+  let clickPct = 0; for (const u of U) if (u.clickPct && has(u.id)) clickPct += u.clickPct;
+  cache = {per, mult, base, curMult, fingerBonus, clickPct};
+}
+const cps = () => cache.base*buffMult('cps');
+const clickPower = () => ((1*cache.curMult + cache.fingerBonus) + cps()*cache.clickPct)*buffMult('click')*O.clickMult;
+const bldCps = key => cache.per[key]*cache.mult;  // per building, before buffs
+
+/* ---------- prices ---------- */
+const priceOf = (b, owned) => Math.ceil(b.cost*Math.pow(1.15, owned));
+function bulkPrice(b, n){ let t = 0; for (let i = 0; i < n; i++) t += priceOf(b, S.own[b.key] + i); return t; }
+function sellValue(b, n){ let t = 0; const k = Math.min(n, S.own[b.key]); for (let i = 1; i <= k; i++) t += priceOf(b, S.own[b.key] - i)*.25; return Math.floor(t); }
+
+/* ---------- earning and buying ---------- */
+function earn(n){ S.cookies += n; S.baked += n; S.allTime += n; }
+let buyMode = 'buy', buyN = 1;
+function buyBuilding(b){
+  if (buyMode === 'sell'){
+    const k = Math.min(buyN, S.own[b.key]); if (!k) return;
+    S.cookies += sellValue(b, k); S.own[b.key] -= k; sfx('sell');
+  } else {
+    const p = bulkPrice(b, buyN); if (S.cookies < p) return;
+    S.cookies -= p; S.own[b.key] += buyN; sfx('buy');
+  }
+  recalc(); renderStore(true); renderMiddle(); checkAch();
+}
+function buyUpgrade(u){
+  if (has(u.id) || S.cookies < u.cost) return;
+  S.cookies -= u.cost; S.ups.push(u.id); sfx('buy'); recalc(); renderStore(true); checkAch(); hideTip();
+}
+let upFilter = 'all';
+
+/* ---------- big cookie canvas ---------- */
+const cv = $('cv'), g = cv.getContext('2d');
+let W = 0, H = 0, dpr = 1, cookieR = 120, cx = 0, cy = 0, hover = false, squish = 0;
+function size(){
+  const r = cv.getBoundingClientRect(); dpr = Math.min(2, devicePixelRatio || 1);
+  W = r.width; H = r.height; cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
+  cookieR = clamp(Math.min(W, H)*.3, 80, 190); cx = W/2; cy = H*.55;
+}
+addEventListener('resize', size);
+const STYLES = {
+  classic:{dough:['#e8b062','#c9852e','#9c5d1c'], chip:'#4a2611'},
+  white:{dough:['#e8b062','#c9852e','#9c5d1c'], chip:'#fff3d8'},
+  double:{dough:['#7a4a2a','#5a311a','#3a1d0d'], chip:'#f5e6c8'},
+  oat:{dough:['#e6c38a','#c7a063','#9c7a44'], chip:'#6b3d1c'}
+};
+const MILK = {plain:'rgba(245,245,255,.85)', choc:'rgba(150,95,60,.88)', straw:'rgba(255,170,200,.88)', mint:'rgba(170,240,210,.88)', none:'rgba(0,0,0,0)'};
+const chips = Array.from({length:22}, (_, i) => { const a = i*2.399, r = Math.sqrt((i + .5)/22)*.82; return {x:Math.cos(a)*r, y:Math.sin(a)*r, s:.06 + (i*37 % 7)/120}; });
+function drawCookie(x, y, r, rot){
+  const st = STYLES[O.cookieStyle] || STYLES.classic;
+  g.save(); g.translate(x, y); g.rotate(rot || 0);
+  const grd = g.createRadialGradient(-r*.3, -r*.3, r*.1, 0, 0, r);
+  grd.addColorStop(0, st.dough[0]); grd.addColorStop(.7, st.dough[1]); grd.addColorStop(1, st.dough[2]);
+  g.fillStyle = grd; g.beginPath();
+  for (let i = 0; i <= 40; i++){ const a = i/40*Math.PI*2, rr = r*(1 + Math.sin(a*7)*.012 + Math.cos(a*5)*.01); g.lineTo(Math.cos(a)*rr, Math.sin(a)*rr); }
+  g.fill();
+  g.fillStyle = st.chip;
+  for (const c of chips){ g.beginPath(); g.ellipse(c.x*r, c.y*r, c.s*r, c.s*r*.8, c.x*3, 0, Math.PI*2); g.fill(); }
+  g.restore();
+}
+const falling = [];
+const floats = [];
+function frameDraw(dt){
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, W, H);
+  // background cookie rain, more with higher production
+  if (O.particles){
+    const rate = clamp(Math.log10(cps() + 1)*1.5, 0, 12);
+    if (Math.random() < rate*dt) falling.push({x:Math.random()*W, y:-20, v:60 + Math.random()*80, r:8 + Math.random()*10, rot:Math.random()*6, vr:(Math.random() - .5)*2});
+  }
+  for (let i = falling.length - 1; i >= 0; i--){
+    const f = falling[i]; f.y += f.v*dt; f.rot += f.vr*dt;
+    g.globalAlpha = .55; drawCookie(f.x, f.y, f.r, f.rot); g.globalAlpha = 1;
+    if (f.y > H + 30) falling.splice(i, 1);
+  }
+  // milk rises with achievements
+  const milk = Math.min(1, milkOf(S)/3);
+  if (O.milk !== 'none'){
+    const my = H - 30 - milk*H*.25;
+    g.fillStyle = MILK[O.milk]; g.beginPath(); g.moveTo(0, H);
+    for (let x = 0; x <= W; x += 10) g.lineTo(x, my + Math.sin(x*.03 + t*2)*5);
+    g.lineTo(W, H); g.fill();
+  }
+  // glow and the big cookie
+  const pulse = 1 + Math.sin(t*2)*.01;
+  squish = Math.max(0, squish - dt*4);
+  const r = cookieR*(hover ? 1.05 : 1)*pulse*(1 - squish*.06);
+  const glow = g.createRadialGradient(cx, cy, r*.6, cx, cy, r*1.6);
+  glow.addColorStop(0, 'rgba(255,230,160,.35)'); glow.addColorStop(1, 'rgba(255,230,160,0)');
+  g.fillStyle = glow; g.beginPath(); g.arc(cx, cy, r*1.6, 0, Math.PI*2); g.fill();
+  g.save(); g.shadowColor = 'rgba(0,0,0,.45)'; g.shadowBlur = 24; g.shadowOffsetY = 10;
+  drawCookie(cx, cy, r, 0); g.restore();
+  // cursors circling the cookie
+  const nc = Math.min(S.own.cursor, 50);
+  g.font = '20px serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  for (let i = 0; i < nc; i++){
+    const a = i/nc*Math.PI*2 + t*.2, rr = r + 24 + (i % 2)*16 + (Math.sin(t*4 + i) > .9 ? -6 : 0);
+    g.save(); g.translate(cx + Math.cos(a)*rr, cy + Math.sin(a)*rr); g.rotate(a - Math.PI/2); g.fillText('👆', 0, 0); g.restore();
+  }
+  // floating numbers
+  g.font = '800 18px "Merriweather Sans", sans-serif';
+  for (let i = floats.length - 1; i >= 0; i--){
+    const f = floats[i]; f.t += dt; f.y -= 50*dt;
+    g.globalAlpha = Math.max(0, 1 - f.t/1.2); g.fillStyle = '#fff'; g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = 3;
+    g.strokeText(f.s, f.x, f.y); g.fillText(f.s, f.x, f.y); g.globalAlpha = 1;
+    if (f.t > 1.2) floats.splice(i, 1);
+  }
+}
+cv.addEventListener('mousemove', e => { const r = cv.getBoundingClientRect(); hover = Math.hypot(e.clientX - r.left - cx, e.clientY - r.top - cy) < cookieR; cv.style.cursor = hover ? 'pointer' : 'default'; });
+cv.addEventListener('mouseleave', () => hover = false);
+cv.addEventListener('pointerdown', e => {
+  const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  if (Math.hypot(x - cx, y - cy) > cookieR*1.05) return;
+  e.preventDefault();
+  const p = clickPower();
+  earn(p); S.hand += p; S.clicks++;
+  squish = 1; sfx('click');
+  if (O.numbers) floats.push({x:x + (Math.random() - .5)*20, y, t:0, s:'+' + fmt(p)});
+  if (O.particles) falling.push({x, y, v:-120, r:7, rot:0, vr:3});
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
+
+/* ---------- golden cookies ---------- */
+let goldTimer = 0, goldEl = null;
+function goldDelay(){
+  let min = 120, max = 360;   // 2–6 minutes at "normal"
+  let f = O.goldFreq; if (has('gold0')) f *= 2; if (has('gold1')) f *= 2;
+  return (min + Math.random()*(max - min))/f;
+}
+function spawnGolden(){
+  if (goldEl) goldEl.remove();
+  const el = document.createElement('button'); el.type = 'button'; el.className = 'golden'; el.setAttribute('aria-label', 'Golden cookie');
+  el.style.left = (20 + Math.random()*(innerWidth - 120)) + 'px'; el.style.top = (70 + Math.random()*(innerHeight - 170)) + 'px';
+  const life = 13*(has('gold0') ? 2 : 1);
+  el.dataset.until = performance.now() + life*1000;
+  el.addEventListener('click', ev => { clickGolden(ev.clientX, ev.clientY); });
+  document.body.appendChild(el); goldEl = el; sfx('gold');
+}
+function addBuff(kind, mult, secs, label){
+  const dur = secs*(has('gold2') ? 2 : 1);
+  const ex = buffs.find(b => b.kind === kind && b.label === label);
+  if (ex){ ex.t = ex.max = dur; } else buffs.push({kind, mult, t:dur, max:dur, label});
+  renderBuffs();
+}
+function clickGolden(x, y){
+  if (!goldEl) return;
+  goldEl.remove(); goldEl = null; S.goldClicks++;
+  const r = Math.random();
+  let msg;
+  if (r < .45){ addBuff('cps', 7, 77, 'Frenzy'); msg = 'Frenzy! Production ×7 for 77 seconds'; }
+  else if (r < .9){ const got = Math.min(S.cookies*.15, cps()*900) + 13; earn(got); msg = 'Lucky! +' + fmt(got) + ' cookies'; }
+  else { addBuff('click', 777, 13, 'Click frenzy'); msg = 'Click frenzy! Clicking power ×777 for 13 seconds'; }
+  pop(msg, x, y, '#ffd25a'); sfx('gold'); recalc(); checkAch();
+}
+function renderBuffs(){
+  const el = $('buffs'); el.textContent = '';
+  for (const b of buffs){ const d = document.createElement('span'); d.className = 'buff'; d.textContent = `${b.label} ${Math.ceil(b.t)}s`; el.appendChild(d); }
+}
+function pop(text, x, y, color){
+  const p = document.createElement('div'); p.className = 'pop'; p.textContent = text; p.style.left = clamp(x - 120, 8, innerWidth - 260) + 'px'; p.style.top = y + 'px'; if (color) p.style.color = color;
+  document.body.appendChild(p);
+  requestAnimationFrame(() => { p.style.transform = 'translateY(-60px)'; p.style.opacity = 0; });
+  setTimeout(() => p.remove(), 1300);
+}
+let toastLock = 0;
+function toast(text){ pop(text, innerWidth/2, 80, '#fff'); }
+
+/* ---------- achievements ---------- */
+function checkAch(){
+  let got = 0;
+  for (const a of A){
+    if (S.ach.includes(a.id)) continue;
+    if (a.test(S)){ S.ach.push(a.id); got++; if (got <= 2) pop('Achievement unlocked: ' + a.name, innerWidth/2, 120, '#7cf29a'); }
+  }
+  if (got){ recalc(); sfx('ach'); }
+}
+
+/* ---------- store and middle ---------- */
+const bldEls = {};
+function renderStore(force){
+  // upgrades: unlocked and not bought, cheapest first
+  const box = $('upgrades');
+  const avail = U.filter(u => !has(u.id) && u.unlock(S)).sort((a, b) => a.cost - b.cost);
+  const sig = avail.map(u => u.id).join(',');
+  if (force || box.dataset.sig !== sig){
+    box.dataset.sig = sig; box.textContent = '';
+    if (!avail.length){ const p = document.createElement('span'); p.style.color = 'var(--dim)'; p.style.fontSize = '12px'; p.textContent = S.ups.length >= U.length ? 'Every upgrade bought!' : 'Keep baking to unlock upgrades.'; box.appendChild(p); }
+    for (const u of avail){
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'up'; b.dataset.id = u.id;
+      b.innerHTML = `${u.icon}<small>${u.tier}</small>`; b.setAttribute('aria-label', `${u.name}, costs ${fmt(u.cost)}`);
+      b.addEventListener('click', () => buyUpgrade(u));
+      b.addEventListener('mouseenter', e => showTip(upTip(u), e)); b.addEventListener('mousemove', moveTip); b.addEventListener('mouseleave', hideTip);
+      box.appendChild(b);
+    }
+  }
+  box.querySelectorAll('.up').forEach(el => el.classList.toggle('cant', S.cookies < UBY[el.dataset.id].cost));
+  // buildings: show owned ones, the next one, and one locked silhouette
+  const list = $('buildings');
+  let shown = 0;
+  B.forEach((b, i) => {
+    let el = bldEls[b.key];
+    if (!el){
+      el = document.createElement('button'); el.type = 'button'; el.className = 'bld';
+      el.innerHTML = `<span class="ic">${b.icon}</span><span><span class="nm"></span><br><span class="pr num"></span></span><span class="own num"></span>`;
+      el.addEventListener('click', () => buyBuilding(b));
+      el.addEventListener('mouseenter', e => showTip(bldTip(b), e)); el.addEventListener('mousemove', moveTip); el.addEventListener('mouseleave', hideTip);
+      list.appendChild(el); bldEls[b.key] = el;
+    }
+    const prevOwned = i === 0 || S.own[B[i - 1].key] > 0 || S.allTime >= b.cost*.5;
+    const visible = i === 0 || S.own[b.key] > 0 || prevOwned || (i > 0 && (S.own[B[i - 1].key] > 0 || S.allTime >= B[i - 1].cost));
+    const locked = !(S.own[b.key] > 0 || S.allTime >= b.cost*.6 || i === 0);
+    el.hidden = !visible;
+    el.classList.toggle('locked', locked);
+    el.querySelector('.nm').textContent = locked ? '???' : b.name;
+    const price = buyMode === 'sell' ? sellValue(b, buyN) : bulkPrice(b, buyN);
+    el.querySelector('.pr').textContent = (buyMode === 'sell' ? 'Sell for ' : '') + fmt(price);
+    el.querySelector('.own').textContent = S.own[b.key] || '';
+    el.classList.toggle('cant', buyMode === 'buy' ? S.cookies < price : S.own[b.key] === 0);
+    if (visible) shown++;
+  });
+}
+function upTip(u){ return `<b>${u.name}</b><br>${u.desc}<br><span class="price">${fmt(u.cost)} cookies</span>${S.cookies < u.cost ? ` <span style="color:var(--bad)">(need ${fmt(u.cost - S.cookies)} more)</span>` : ''}`; }
+function bldTip(b){
+  const n = S.own[b.key], each = bldCps(b.key), tot = each*n, all = cache.base || 1;
+  return `<b>${b.name}</b> · owned: ${n}<br>${b.desc}<br>` + (n ? `Each makes <b style="font-family:inherit;font-size:13px">${fmt(each)}</b> per second.<br>All ${n} make ${fmt(tot)} per second (${(tot/all*100).toFixed(1)}% of your production).<br>` : `Each makes ${fmt(each)} per second.<br>`) +
+    `<span class="price">${buyMode === 'sell' ? 'Sells for ' + fmt(sellValue(b, buyN)) : fmt(bulkPrice(b, buyN)) + ' for ' + buyN}</span>`;
+}
+const tip = $('tip');
+function showTip(html, e){ tip.innerHTML = typeof html === 'function' ? html() : html; tip.hidden = false; moveTip(e); }
+function moveTip(e){ const w = tip.offsetWidth, h = tip.offsetHeight; tip.style.left = clamp(e.clientX - w - 16, 8, innerWidth - w - 8) + 'px'; tip.style.top = clamp(e.clientY - 10, 8, innerHeight - h - 8) + 'px'; }
+function hideTip(){ tip.hidden = true; }
+function renderMiddle(){
+  const box = $('middle'); box.textContent = '';
+  const owned = B.filter(b => S.own[b.key] > 0);
+  if (!owned.length){ const d = document.createElement('div'); d.className = 'empty'; d.innerHTML = 'Your bakery is empty.<br>Click the big cookie, then buy a Cursor or a Grandma from the store.'; box.appendChild(d); return; }
+  for (const b of owned){
+    const n = S.own[b.key];
+    const s = document.createElement('div'); s.className = 'strip';
+    const shown = Math.min(n, 40);
+    s.innerHTML = `<h3><b>${b.name}</b>${fmt(bldCps(b.key)*n)} per second</h3><div class="units">${('<span>' + b.icon + '</span>').repeat(shown)}</div>` + (n > shown ? `<div class="more">+${n - shown} more</div>` : '');
+    box.appendChild(s);
+  }
+}
+document.querySelectorAll('.modes [data-n]').forEach(btn => btn.addEventListener('click', () => {
+  buyN = +btn.dataset.n; document.querySelectorAll('.modes [data-n]').forEach(x => x.setAttribute('aria-pressed', String(x === btn))); renderStore();
+}));
+$('m-buy').addEventListener('click', () => { buyMode = 'buy'; $('m-buy').setAttribute('aria-pressed', 'true'); $('m-sell').setAttribute('aria-pressed', 'false'); renderStore(); });
+$('m-sell').addEventListener('click', () => { buyMode = 'sell'; $('m-sell').setAttribute('aria-pressed', 'true'); $('m-buy').setAttribute('aria-pressed', 'false'); renderStore(); });
+
+/* ---------- bakery name and the open sesame secret ---------- */
+const bakeryName = () => S.name ? S.name + "'s bakery" : 'Your bakery';
+function renderName(){ $('bakery').textContent = bakeryName(); }
+$('bakery').addEventListener('click', () => {
+  const n = prompt('Name your bakery:', S.name);
+  if (n === null) return;
+  const clean = n.trim().slice(0, 24);
+  if (!clean) return;
+  S.name = clean; S.named = true; renderName();
+  if (clean.toLowerCase().replace(/[^a-z]/g, '').includes('opensesame')) openSesame();
+  checkAch(); save();
+});
+function openSesame(){
+  // the secret word: max everything and open the dev panel
+  S.sesame = true;
+  for (const b of B) S.own[b.key] = Math.max(S.own[b.key], 600);
+  for (const u of U) if (!has(u.id)) S.ups.push(u.id);
+  for (const a of A) if (!S.ach.includes(a.id)) S.ach.push(a.id);
+  S.cookies = Math.max(S.cookies, 1e45); S.baked = Math.max(S.baked, 1e45); S.allTime = Math.max(S.allTime, 1e45);
+  S.hand = Math.max(S.hand, 1e15); S.goldClicks = Math.max(S.goldClicks, 777);
+  recalc(); renderStore(true); renderMiddle();
+  $('dev').hidden = false;
+  toast('Open sesame! Everything is maxed out.');
+}
+document.querySelectorAll('[data-dev]').forEach(b => b.addEventListener('click', () => {
+  const d = b.dataset.dev;
+  if (d === 'x1000'){ const add = Math.max(S.cookies*999, 1e6); earn(add); }
+  if (d === 'golden') spawnGolden();
+  if (d === 'frenzy') addBuff('cps', 7, 77, 'Frenzy');
+  if (d === 'click') addBuff('click', 777, 13, 'Click frenzy');
+  if (d === 'close') $('dev').hidden = true;
+  recalc();
+}));
+
+/* ---------- news ticker ---------- */
+const NEWS = [
+  () => 'Local bakery smells suspiciously delicious, neighbors report.',
+  () => 'Scientists confirm cookies are 100% cookie.',
+  () => `${bakeryName()} now bakes ${fmt(cps())} cookies every second. Dentists alarmed.`,
+  () => S.own.grandma ? 'Grandmas organize knitting circle; knit a cookie by accident.' : 'Area grandmas looking for work. "We bake," they say.',
+  () => S.own.farm ? 'Cookie crops thrive after a summer of chocolate rain.' : 'Farmers puzzled by request to plant cookie seeds.',
+  () => S.own.mine ? 'Miners strike chocolate. Again.' : 'Geologists say there may be dough underground.',
+  () => S.own.factory ? 'Factory workers report the conveyor belt "never stops, never sleeps."' : 'Factory owners eye the cookie business.',
+  () => S.own.bank ? 'Banks now accept cookies as currency. Coins in decline.' : 'Economists warn: cookies may become money.',
+  () => S.own.temple ? 'Archeologists find ancient cookie in temple. Still crunchy.' : 'Mysterious temple ruins smell faintly of vanilla.',
+  () => S.own.wizard ? 'Wizard turns frog into cookie, refuses to turn it back.' : 'Wizards debate whether cookies count as magic.',
+  () => S.own.ship ? 'Cookie planet discovered. Shipping prices skyrocket.' : 'Astronomers spot a crumbly-looking planet.',
+  () => S.own.portal ? 'Portal leaks cookies into town square. Nobody complains.' : 'Strange humming heard near the bakery basement.',
+  () => S.own.time ? 'Time traveler eats tomorrow\'s cookies today.' : 'Clockmakers report clocks smelling of cinnamon.',
+  () => 'Study finds 9 out of 10 people prefer cookies to not having cookies.',
+  () => 'Cookie-shaped cloud spotted over the city. Experts say "hungry".',
+  () => 'Milk sales rise sharply. Coincidence? Unlikely.',
+  () => 'Local kid clicks cookie for six hours, calls it "cardio".',
+  () => buffs.length ? 'Golden cookie sightings cause traffic jams.' : 'Rumors of shiny golden cookies spread across town.',
+  () => S.prestige ? `Bakery reborn ${S.ascensions} time${S.ascensions > 1 ? 's' : ''}; heavenly glow reported.` : 'Philosophers ask: is there life after the bakery?',
+  () => 'Cookie stocks reach an all-time high. Also, an all-time crunchy.'
+];
+let newsT = 0;
+function nextNews(){ if (!O.news){ $('news').textContent = ''; return; } $('news').textContent = 'News: ' + NEWS[Math.floor(Math.random()*NEWS.length)](); }
+
+/* ---------- stats, ascension ---------- */
+function prestigeFor(allTime){ return Math.floor(Math.cbrt(allTime/1e12)); }
+function renderStats(){
+  const el = $('stats-body');
+  const pt = prestigeFor(S.allTime) - S.prestige;
+  const secs = Math.floor(S.playMs/1000);
+  const row = (k, v) => `<span>${k}</span><b class="num">${v}</b>`;
+  el.innerHTML = `<h3>General</h3><div class="stats">` +
+    row('Cookies in bank', fmt(S.cookies)) + row('Cookies baked (this run)', fmt(S.baked)) + row('Cookies baked (all time)', fmt(S.allTime)) +
+    row('Buildings owned', fmt(B.reduce((a, b) => a + S.own[b.key], 0), true)) + row('Cookies per second', fmt(cps())) + row('Cookies per click', fmt(clickPower())) +
+    row('Cookie clicks', fmt(S.clicks, true)) + row('Handmade cookies', fmt(S.hand)) + row('Golden cookies clicked', fmt(S.goldClicks, true)) +
+    row('Time played', `${Math.floor(secs/3600)}h ${Math.floor(secs/60) % 60}m`) + row('Prestige level', `${fmt(S.prestige, true)} (+${fmt(S.prestige, true)}% production)`) +
+    row('Milk', Math.round(milkOf(S)*100) + '%') + `</div>` +
+    `<h3>Upgrades bought (${S.ups.length}/${U.length})</h3><div class="achs">${U.filter(u => has(u.id)).map(u => `<span class="ach" title="${u.name}: ${u.desc}">${u.icon}</span>`).join('') || '<span style="color:var(--dim)">None yet.</span>'}</div>` +
+    `<h3>Achievements (${S.ach.length}/${A.length})</h3><div class="achs">${A.map(a => `<span class="ach${S.ach.includes(a.id) ? '' : ' no'}" title="${S.ach.includes(a.id) ? a.name + ': ' : '???: '}${a.desc}">${a.icon}</span>`).join('')}</div>`;
+  const ar = $('ascend-row'); ar.innerHTML = '';
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'btn gold';
+  b.textContent = pt > 0 ? `Ascend (+${fmt(pt, true)} prestige)` : 'Ascend (bake 1 trillion cookies to earn prestige)';
+  b.disabled = pt <= 0; b.style.opacity = pt > 0 ? 1 : .5;
+  b.addEventListener('click', () => ask('Ascend?', `You will lose your cookies, buildings and upgrades, and gain ${fmt(pt, true)} prestige levels. Each level permanently adds +1% production. Achievements are kept.`, () => {
+    const keep = {prestige:S.prestige + pt, ascensions:S.ascensions + 1, allTime:S.allTime, ach:S.ach, goldClicks:S.goldClicks, name:S.name, named:S.named, sesame:S.sesame, playMs:S.playMs, clicks:S.clicks};
+    S = {...fresh(), ...keep}; buffs.length = 0; recalc(); renderStore(true); renderMiddle(); checkAch(); save(); closeAll();
+    toast('Ascended! +' + pt + '% production forever.');
+  }));
+  ar.appendChild(b);
+}
+
+/* ---------- options ---------- */
+const OSCHEMA = [
+  {h:'Gameplay'},
+  {id:'goldFreq', label:'Golden cookies', type:'select', num:true, options:[[.5,'Rare'],[1,'Normal'],[2,'Often'],[5,'Very often']]},
+  {id:'speed', label:'Production speed', type:'select', num:true, options:[[1,'Normal'],[2,'×2'],[5,'×5'],[10,'×10'],[100,'×100']]},
+  {id:'clickMult', label:'Click power', type:'select', num:true, options:[[1,'Normal'],[2,'×2'],[10,'×10'],[100,'×100']]},
+  {id:'offline', label:'Baking while you are away', type:'select', num:true, options:[[0,'Off'],[.25,'25%'],[.5,'50%'],[1,'100%']]},
+  {h:'Look'},
+  {id:'format', label:'Numbers', type:'select', options:[['short','Short (1.234 million)'],['full','Full (1,234,567)'],['sci','Scientific (1.234e6)']]},
+  {id:'cookieStyle', label:'Big cookie', type:'select', options:[['classic','Chocolate chip'],['white','White chocolate'],['double','Double chocolate'],['oat','Oatmeal raisin']]},
+  {id:'milk', label:'Milk', type:'select', options:[['plain','Plain'],['choc','Chocolate'],['straw','Strawberry'],['mint','Mint'],['none','No milk']]},
+  {id:'theme', label:'Background', type:'select', options:[['blue','Blue'],['night','Night'],['rose','Rose'],['mint','Mint']]},
+  {id:'particles', label:'Falling cookies', type:'toggle'},
+  {id:'numbers', label:'Numbers when you click', type:'toggle'},
+  {id:'news', label:'News ticker', type:'toggle'},
+  {h:'Sound & saving'},
+  {id:'sound', label:'Sound', type:'toggle'},
+  {id:'volume', label:'Volume', type:'range', min:0, max:1, step:.05, fmt:v => Math.round(v*100) + '%'},
+  {id:'autosave', label:'Autosave', type:'select', num:true, options:[[10,'Every 10 seconds'],[30,'Every 30 seconds'],[60,'Every minute'],[0,'Off']]}
+];
+function renderOpts(){
+  const el = $('opts-body'); el.textContent = '';
+  for (const it of OSCHEMA){
+    if (it.h){ const h = document.createElement('h3'); h.textContent = it.h; el.appendChild(h); continue; }
+    const row = document.createElement('div'); row.className = 'row';
+    const lab = document.createElement('label'); lab.textContent = it.label; lab.htmlFor = 'o-' + it.id;
+    const ctl = document.createElement('div'); ctl.className = 'ctl'; row.append(lab, ctl);
+    if (it.type === 'select'){
+      const s = document.createElement('select'); s.id = 'o-' + it.id;
+      for (const [v, l] of it.options){ const o = document.createElement('option'); o.value = v; o.textContent = l; s.appendChild(o); }
+      s.value = O[it.id]; s.addEventListener('change', () => { O[it.id] = it.num ? +s.value : s.value; applyOpts(); }); ctl.appendChild(s);
+    } else if (it.type === 'toggle'){
+      const c = document.createElement('input'); c.type = 'checkbox'; c.className = 'switch'; c.id = 'o-' + it.id; c.setAttribute('role', 'switch'); c.checked = !!O[it.id];
+      c.addEventListener('change', () => { O[it.id] = c.checked; applyOpts(); }); ctl.appendChild(c);
+    } else {
+      const r = document.createElement('input'); r.type = 'range'; r.id = 'o-' + it.id; r.min = it.min; r.max = it.max; r.step = it.step; r.value = O[it.id];
+      const out = document.createElement('output'); out.textContent = it.fmt(+O[it.id]);
+      r.addEventListener('input', () => { O[it.id] = +r.value; out.textContent = it.fmt(+r.value); applyOpts(); }); ctl.append(r, out);
+    }
+    el.appendChild(row);
+  }
+}
+function applyOpts(){
+  document.body.className = O.theme === 'blue' ? '' : 'theme-' + O.theme;
+  saveOpts(); recalc(); renderStore(); renderMiddle(); nextNews();
+}
+
+/* ---------- dialogs ---------- */
+function open(id){ closeAll(); $(id).hidden = false; }
+function closeAll(){ ['stats','opts','confirm'].forEach(id => $(id).hidden = true); }
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeAll));
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) closeAll(); }));
+$('b-stats').addEventListener('click', () => { renderStats(); open('stats'); });
+$('b-opts').addEventListener('click', () => { renderOpts(); $('opt-note').textContent = ''; open('opts'); });
+$('save-now').addEventListener('click', () => { $('opt-note').textContent = save() ? 'Saved.' : 'Saving is blocked in this browser.'; });
+let confirmFn = null;
+function ask(title, text, fn){ $('cf-title').textContent = title; $('cf-text').textContent = text; confirmFn = fn; closeAll(); $('confirm').hidden = false; $('cf-no').focus(); }
+$('cf-yes').addEventListener('click', () => { const f = confirmFn; confirmFn = null; closeAll(); if (f) f(); });
+$('cf-no').addEventListener('click', closeAll);
+$('wipe').addEventListener('click', () => ask('Wipe your save?', 'This deletes all cookies, buildings, upgrades, achievements and prestige. It cannot be undone.', () => {
+  S = fresh(); buffs.length = 0; $('dev').hidden = true; recalc(); save(); renderName(); renderStore(true); renderMiddle(); toast('Save wiped. Fresh start!');
+}));
+
+/* ---------- sound ---------- */
+let actx = null;
+function sfx(kind){
+  if (!O.sound || O.volume <= 0) return;
+  try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e){ return; }
+  const o = actx.createOscillator(), gn = actx.createGain(), now = actx.currentTime;
+  const v = O.volume*.15;
+  const set = {click:[520 + Math.random()*120, .06, 'triangle'], buy:[660, .1, 'square'], sell:[330, .12, 'square'], gold:[880, .4, 'sine'], ach:[990, .3, 'triangle']}[kind] || [440, .1, 'sine'];
+  o.type = set[2]; o.frequency.setValueAtTime(set[0], now);
+  if (kind === 'gold' || kind === 'ach') o.frequency.exponentialRampToValueAtTime(set[0]*1.5, now + set[1]);
+  gn.gain.setValueAtTime(v, now); gn.gain.exponentialRampToValueAtTime(.001, now + set[1]);
+  o.connect(gn); gn.connect(actx.destination); o.start(); o.stop(now + set[1] + .02);
+}
+
+/* ---------- main loop ---------- */
+let t = 0, last = performance.now(), uiT = 0, saveT = 0, achT = 0, midT = 0;
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt = Math.min(1, (now - last)/1000); last = now; t += dt;
+  S.playMs += dt*1000;
+  earn(cps()*dt);
+  // buffs tick down
+  let changed = false;
+  for (let i = buffs.length - 1; i >= 0; i--){ buffs[i].t -= dt; if (buffs[i].t <= 0){ buffs.splice(i, 1); changed = true; } }
+  // golden cookies
+  if (goldEl){ if (now > +goldEl.dataset.until){ goldEl.remove(); goldEl = null; } }
+  else { goldTimer -= dt; if (goldTimer <= 0){ spawnGolden(); goldTimer = goldDelay(); } }
+  frameDraw(dt);
+  uiT += dt;
+  if (uiT > .1){
+    uiT = 0;
+    $('count').textContent = fmt(S.cookies, true) + (Math.floor(S.cookies) === 1 ? ' cookie' : ' cookies');
+    $('cps').textContent = 'per second: ' + fmt(cps()) + (buffMult('cps') > 1 ? ' (×' + buffMult('cps') + ')' : '');
+    document.title = fmt(S.cookies, true) + ' cookies · Cookie Empire';
+    renderStore(); renderBuffs();
+  }
+  if (changed) recalc();
+  achT += dt; if (achT > 1){ achT = 0; checkAch(); }
+  midT += dt; if (midT > 3){ midT = 0; renderMiddle(); }
+  newsT += dt; if (newsT > 9){ newsT = 0; nextNews(); }
+  saveT += dt; if (O.autosave > 0 && saveT > O.autosave){ saveT = 0; save(); }
+}
+addEventListener('beforeunload', save);
+addEventListener('pagehide', save);
+
+/* ---------- boot ---------- */
+load();
+if (S.name.toLowerCase().replace(/[^a-z]/g, '').includes('opensesame') && !S.sesame) openSesame();
+if (S.sesame) $('dev').hidden = false;
+document.body.className = O.theme === 'blue' ? '' : 'theme-' + O.theme;
+recalc(); renderName(); renderStore(true); renderMiddle(); nextNews(); size();
+goldTimer = goldDelay();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

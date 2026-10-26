@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@500;700&display=swap">
 <style>
-/* Launcher: starfield backdrop, one question, two big doors. */
+/* Launcher: starfield backdrop, one question, a door for each game. */
 :root{
   --bg:#05050f;
   --ink:#f3f5ff;
@@ -26,13 +26,15 @@ html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);overflow-x:hidden}
 #stars{position:fixed;inset:0;width:100%;height:100%;display:block}
 main{position:relative;min-height:100%;display:grid;place-items:center;padding:32px max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}
-.wrap{width:min(860px,100%);display:grid;gap:28px;justify-items:center;text-align:center}
+.wrap{width:min(1100px,100%);display:grid;gap:28px;justify-items:center;text-align:center}
 .eyebrow{margin:0;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);font-weight:700}
 h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(36px,8vw,68px);line-height:.95;text-wrap:balance;
   background:linear-gradient(180deg,#fff 15%,#f9a8d4 55%,var(--arcade-2));-webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(0 3px 0 #3b0f4f)}
-.doors{width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
-.door{position:relative;display:grid;gap:10px;align-content:end;min-height:240px;padding:24px;border-radius:16px;text-decoration:none;color:var(--ink);text-align:left;
+.doors{width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.doors .door:nth-child(-n+2){min-height:250px}
+.door.turbo,.door.cookie,.door.show{padding-top:92px}
+.door{position:relative;display:grid;gap:10px;align-content:end;min-height:200px;padding:22px;border-radius:16px;text-decoration:none;color:var(--ink);text-align:left;
   border:2px solid rgba(255,255,255,.12);overflow:hidden;transition:transform .15s,border-color .15s,box-shadow .15s}
 .door:hover,.door:focus-visible{transform:translateY(-4px);outline:none}
 .door .key{position:absolute;top:14px;right:16px;font:700 12px var(--font-ui);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.3);border-bottom-width:2px;border-radius:5px;padding:1px 7px}
@@ -51,6 +53,18 @@ h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(36px
 .storm:hover,.storm:focus-visible{border-color:var(--storm);box-shadow:0 0 30px rgba(139,92,255,.45)}
 .door > *{position:relative}
 .foot{margin:0;color:var(--dim);font-size:13px}
+/* the three new doors */
+.turbo{background:radial-gradient(ellipse at 20% 0%,rgba(47,140,255,.5),transparent 60%),linear-gradient(165deg,#1d5c34 0%,#123a24 60%,#0b2216 100%)}
+.turbo::before{content:"";position:absolute;right:52px;top:16px;width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#c9d2e8 60%,#8a93ad);box-shadow:0 0 30px rgba(255,177,31,.45);pointer-events:none}
+.turbo:hover,.turbo:focus-visible{border-color:#ff8a1f;box-shadow:0 0 30px rgba(255,138,31,.4)}
+.cookie{background:radial-gradient(circle at 80% 20%,rgba(255,210,90,.35),transparent 55%),linear-gradient(170deg,#3a6aa3 0%,#1f3a5c 70%)}
+.cookie::before{content:"";position:absolute;right:52px;top:14px;width:62px;height:62px;border-radius:50%;background:radial-gradient(circle,#4a2611 0 7%,transparent 8%) 6px 8px/20px 20px,radial-gradient(circle at 35% 30%,#e8b062,#c9852e 70%,#9c5d1c);box-shadow:0 8px 20px rgba(0,0,0,.4);pointer-events:none}
+.cookie h2{font-family:Georgia,serif;font-size:30px}
+.cookie:hover,.cookie:focus-visible{border-color:#ffd25a;box-shadow:0 0 30px rgba(255,210,90,.4)}
+.show{background:linear-gradient(160deg,#8ec5f0 0%,#4f7ab0 45%,#1a2340 100%)}
+.show::before{content:"";position:absolute;right:52px;top:16px;width:52px;height:52px;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 3px #ff3b4f;pointer-events:none;background:linear-gradient(#fff,#fff) center/4px 100% no-repeat,linear-gradient(#fff,#fff) center/100% 4px no-repeat}
+.show h2{text-shadow:3px 3px 0 #ff3b4f}
+.show:hover,.show:focus-visible{border-color:#ff3b4f;box-shadow:0 0 30px rgba(255,59,79,.4)}
 @media (prefers-reduced-motion:reduce){.door{transition:none}}
 
 /* player chip + sign-in panel */
@@ -81,14 +95,35 @@ h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(36px
         <p>A 3D build battle. Build, edit and fight a bot in Duel, Box Fight or Just Build.</p>
         <span class="go">DROP IN</span>
       </a>
+      <a class="door turbo" href="turbo-goal.html" id="to-turbo">
+        <span class="key">3</span>
+        <h2>Turbo Goal</h2>
+        <p>Car soccer against the CPU. Pick your car, grab boost pads, flip into the ball.</p>
+        <span class="go">KICK OFF</span>
+      </a>
+      <a class="door cookie" href="cookie-empire.html" id="to-cookie">
+        <span class="key">4</span>
+        <h2>Cookie Empire</h2>
+        <p>Click the big cookie, hire grandmas, build an empire. It keeps baking while you're gone.</p>
+        <span class="go">START BAKING</span>
+      </a>
+      <a class="door show" href="showdown.html" id="to-show">
+        <span class="key">5</span>
+        <h2>Showdown</h2>
+        <p>1v1 arena shooter. Pick a loadout and win five rounds before your rival does.</p>
+        <span class="go">FIGHT</span>
+      </a>
     </div>
-    <p class="foot">Press 1 or 2, or click a door.</p>
+    <p class="foot">Press 1 to 5, or click a door.</p>
   </div>
 </main>
 <script>
 addEventListener('keydown', function (e) {
   if (e.key === '1') location.href = 'arcade-games.html';
   if (e.key === '2') location.href = 'storm-duel.html';
+  if (e.key === '3') location.href = 'turbo-goal.html';
+  if (e.key === '4') location.href = 'cookie-empire.html';
+  if (e.key === '5') location.href = 'showdown.html';
 });
 (function () {
   var c = document.getElementById('stars'), g = c.getContext('2d'), stars = [];
