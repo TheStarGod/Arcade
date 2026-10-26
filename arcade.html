@@ -1,102 +1,104 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Pranav and Advik's Arcade</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pranav and Advik's Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@500;700&display=swap">
 <style>
-  body { margin: 0; background: #05050f; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: Courier, monospace; }
-  canvas { background: #000; image-rendering: pixelated; box-shadow: 0 0 40px rgba(99,102,241,0.35); }
-  #hint { position: fixed; bottom: 8px; width: 100%; text-align: center; color: #475569; font-size: 11px; }
+/* Launcher: starfield backdrop, one question, two big doors. */
+:root{
+  --bg:#05050f;
+  --ink:#f3f5ff;
+  --dim:#9aa3c9;
+  --arcade:#ec4899;
+  --arcade-2:#a855f7;
+  --storm:#8b5cff;
+  --gold:#ffd84a;
+  --font-display:"Bungee","Impact","Arial Black",sans-serif;
+  --font-ui:"Chakra Petch","Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);overflow-x:hidden}
+#stars{position:fixed;inset:0;width:100%;height:100%;display:block}
+main{position:relative;min-height:100%;display:grid;place-items:center;padding:32px max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}
+.wrap{width:min(860px,100%);display:grid;gap:28px;justify-items:center;text-align:center}
+.eyebrow{margin:0;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);font-weight:700}
+h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(36px,8vw,68px);line-height:.95;text-wrap:balance;
+  background:linear-gradient(180deg,#fff 15%,#f9a8d4 55%,var(--arcade-2));-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 3px 0 #3b0f4f)}
+.doors{width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.door{position:relative;display:grid;gap:10px;align-content:end;min-height:240px;padding:24px;border-radius:16px;text-decoration:none;color:var(--ink);text-align:left;
+  border:2px solid rgba(255,255,255,.12);overflow:hidden;transition:transform .15s,border-color .15s,box-shadow .15s}
+.door:hover,.door:focus-visible{transform:translateY(-4px);outline:none}
+.door .key{position:absolute;top:14px;right:16px;font:700 12px var(--font-ui);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.3);border-bottom-width:2px;border-radius:5px;padding:1px 7px}
+.door h2{margin:0;font-family:var(--font-display);font-weight:400;font-size:28px;line-height:1}
+.door p{margin:0;color:rgba(255,255,255,.78);font-size:15px;line-height:1.4;max-width:34ch}
+.door .go{justify-self:start;margin-top:6px;font:700 13px var(--font-ui);letter-spacing:.14em;padding:8px 14px;border-radius:8px;background:rgba(255,255,255,.14)}
+.arcade{background:linear-gradient(160deg,#2a0a3d 0%,#14072a 60%,#09061a 100%);font-family:Courier,monospace}
+.arcade::before{content:"";position:absolute;left:-10%;right:-10%;bottom:0;height:46%;
+  background:repeating-linear-gradient(90deg,rgba(168,85,247,.35) 0 1px,transparent 1px 34px),repeating-linear-gradient(0deg,rgba(236,72,153,.35) 0 1px,transparent 1px 18px);
+  transform:perspective(220px) rotateX(55deg);transform-origin:bottom;opacity:.7;pointer-events:none}
+.arcade h2{color:#fbcfe8;text-shadow:0 0 18px rgba(236,72,153,.6)}
+.arcade:hover,.arcade:focus-visible{border-color:var(--arcade);box-shadow:0 0 30px rgba(236,72,153,.35)}
+.storm{background:radial-gradient(ellipse at 70% 0%,rgba(139,92,255,.55),transparent 60%),linear-gradient(170deg,#3a6ea8 0%,#1d2a5c 55%,#0d1030 100%)}
+.storm::before{content:"";position:absolute;right:-30px;top:-30px;width:180px;height:180px;border-radius:50%;border:3px solid rgba(201,179,255,.55);box-shadow:0 0 40px rgba(139,92,255,.6) inset;pointer-events:none}
+.storm h2{color:#fff}
+.storm:hover,.storm:focus-visible{border-color:var(--storm);box-shadow:0 0 30px rgba(139,92,255,.45)}
+.door > *{position:relative}
+.foot{margin:0;color:var(--dim);font-size:13px}
+@media (prefers-reduced-motion:reduce){.door{transition:none}}
 </style>
 </head>
 <body>
-<canvas id="game" width="400" height="480"></canvas>
-<div id="hint">click the game once so it hears your keyboard</div>
+<canvas id="stars" aria-hidden="true"></canvas>
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Pranav &amp; Advik present</p>
+    <h1>Where do you want to play?</h1>
+    <div class="doors">
+      <a class="door arcade" href="arcade-games.html" id="to-arcade">
+        <span class="key">1</span>
+        <h2>The Arcade</h2>
+        <p>Flappy Bird, Snake, Troll Traps, Tank Arena, Boss Battle and more retro games with leaderboards.</p>
+        <span class="go">ENTER ARCADE</span>
+      </a>
+      <a class="door storm" href="storm-duel.html" id="to-storm">
+        <span class="key">2</span>
+        <h2>Storm Duel</h2>
+        <p>A 3D build battle. Build, edit and fight a bot in Duel, Box Fight or Just Build.</p>
+        <span class="go">DROP IN</span>
+      </a>
+    </div>
+    <p class="foot">Press 1 or 2, or click a door.</p>
+  </div>
+</main>
 <script>
-// ---- A tiny stand-in for the CodeHS graphics library ----
-// It supports everything arcade.js uses: Rectangle, Circle, Text, Line, add/remove,
-// setTimer/stopTimer, mouse + keyboard methods, Randomizer, Keyboard, Color, prompt.
+addEventListener('keydown', function (e) {
+  if (e.key === '1') location.href = 'arcade-games.html';
+  if (e.key === '2') location.href = 'storm-duel.html';
+});
 (function () {
-  var canvas = document.getElementById("game");
-  var ctx = canvas.getContext("2d");
-  var objs = [];
-  var dirty = true;
-
-  function Shape() { this.x = 0; this.y = 0; this.color = "#000000"; }
-  Shape.prototype.setPosition = function (x, y) { this.x = x; this.y = y; dirty = true; };
-  Shape.prototype.setColor = function (c) { this.color = c; dirty = true; };
-  Shape.prototype.move = function (dx, dy) { this.x += dx; this.y += dy; dirty = true; };
-  Shape.prototype.getX = function () { return this.x; };
-  Shape.prototype.getY = function () { return this.y; };
-
-  function Rectangle(w, h) { Shape.call(this); this.w = w; this.h = h; }
-  Rectangle.prototype = Object.create(Shape.prototype);
-  Rectangle.prototype.getWidth = function () { return this.w; };
-  Rectangle.prototype.getHeight = function () { return this.h; };
-  Rectangle.prototype.setSize = function (w, h) { this.w = w; this.h = h; dirty = true; };
-  Rectangle.prototype.draw = function () { ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.w, this.h); };
-
-  function Circle(r) { Shape.call(this); this.r = r; }
-  Circle.prototype = Object.create(Shape.prototype);
-  Circle.prototype.getRadius = function () { return this.r; };
-  Circle.prototype.setRadius = function (r) { this.r = r; dirty = true; };
-  Circle.prototype.getWidth = function () { return this.r * 2; };
-  Circle.prototype.getHeight = function () { return this.r * 2; };
-  Circle.prototype.draw = function () { ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, Math.max(0, this.r), 0, Math.PI * 2); ctx.fill(); };
-
-  function Line(x1, y1, x2, y2) { Shape.call(this); this.x = x1; this.y = y1; this.ex = x2; this.ey = y2; this.lw = 1; }
-  Line.prototype = Object.create(Shape.prototype);
-  Line.prototype.setEndpoint = function (x, y) { this.ex = x; this.ey = y; dirty = true; };
-  Line.prototype.setLineWidth = function (w) { this.lw = w; };
-  Line.prototype.move = function (dx, dy) { this.x += dx; this.y += dy; this.ex += dx; this.ey += dy; dirty = true; };
-  Line.prototype.draw = function () { ctx.strokeStyle = this.color; ctx.lineWidth = this.lw; ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.ex, this.ey); ctx.stroke(); };
-
-  function Text(t, font) { Shape.call(this); this.t = String(t); this.font = normFont(font || "12pt Arial"); }
-  Text.prototype = Object.create(Shape.prototype);
-  function normFont(f) { return f.replace(/(\d+)pt/, function (m, n) { return Math.round(n * 1.333) + "px"; }); }
-  Text.prototype.setText = function (t) { this.t = String(t); dirty = true; };
-  Text.prototype.getText = function () { return this.t; };
-  Text.prototype.setFont = function (f) { this.font = normFont(f); dirty = true; };
-  Text.prototype.getWidth = function () { ctx.font = this.font; return ctx.measureText(this.t).width; };
-  Text.prototype.getHeight = function () { return parseInt(this.font, 10) || 16; };
-  Text.prototype.draw = function () { ctx.font = this.font; ctx.fillStyle = this.color; ctx.textBaseline = "alphabetic"; ctx.fillText(this.t, this.x, this.y); };
-
-  window.Rectangle = Rectangle; window.Circle = Circle; window.Line = Line; window.Text = Text;
-  window.Color = { white: "#ffffff", black: "#000000", red: "#ff0000", green: "#00ff00", blue: "#0000ff", yellow: "#ffff00", orange: "#ffa500", purple: "#800080", gray: "#808080", grey: "#808080", cyan: "#00ffff", magenta: "#ff00ff" };
-  window.Keyboard = { SPACE: 32, UP: 38, DOWN: 40, LEFT: 37, RIGHT: 39, ENTER: 13, letter: function (c) { return c.toUpperCase().charCodeAt(0); } };
-  window.Randomizer = {
-    nextInt: function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); },
-    nextFloat: function (a, b) { return a + Math.random() * (b - a); },
-    nextBoolean: function () { return Math.random() < 0.5; },
-    nextColor: function () { return "#" + Math.floor(Math.random() * 16777215).toString(16); }
-  };
-  window.getWidth = function () { return canvas.width; };
-  window.getHeight = function () { return canvas.height; };
-  window.add = function (o) { objs.push(o); dirty = true; };
-  window.remove = function (o) { var i = objs.indexOf(o); if (i >= 0) objs.splice(i, 1); dirty = true; };
-  window.removeAll = function () { objs = []; dirty = true; };
-  window.getElementAt = function (x, y) { for (var i = objs.length - 1; i >= 0; i--) { var o = objs[i]; if (o instanceof Rectangle && x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h) return o; if (o instanceof Circle && (x - o.x) * (x - o.x) + (y - o.y) * (y - o.y) <= o.r * o.r) return o; } return null; };
-  window.setBackgroundColor = function (c) { canvas.style.background = c; };
-
-  var timers = [];
-  window.setTimer = function (fn, ms) { stopTimer(fn); timers.push({ fn: fn, id: setInterval(fn, ms) }); };
-  window.stopTimer = function (fn) { for (var i = timers.length - 1; i >= 0; i--) if (timers[i].fn === fn) { clearInterval(timers[i].id); timers.splice(i, 1); } };
-
-  function evt(e) { var r = canvas.getBoundingClientRect(); var x = (e.clientX - r.left) * canvas.width / r.width, y = (e.clientY - r.top) * canvas.height / r.height; return { getX: function () { return x; }, getY: function () { return y; } }; }
-  window.mouseClickMethod = function (fn) { canvas.addEventListener("click", function (e) { fn(evt(e)); }); };
-  window.mouseMoveMethod = function (fn) { canvas.addEventListener("mousemove", function (e) { fn(evt(e)); }); };
-  window.mouseDownMethod = function (fn) { canvas.addEventListener("mousedown", function (e) { fn(evt(e)); }); };
-  window.mouseUpMethod = function (fn) { canvas.addEventListener("mouseup", function (e) { fn(evt(e)); }); };
-  window.mouseDragMethod = function (fn) { canvas.addEventListener("mousemove", function (e) { if (e.buttons) fn(evt(e)); }); };
-  window.keyDownMethod = function (fn) { window.addEventListener("keydown", function (e) { if ([32, 37, 38, 39, 40].indexOf(e.keyCode) >= 0) e.preventDefault(); fn(e); }); };
-  window.keyUpMethod = function (fn) { window.addEventListener("keyup", function (e) { fn(e); }); };
-
-  function render() { if (dirty) { ctx.clearRect(0, 0, canvas.width, canvas.height); for (var i = 0; i < objs.length; i++) objs[i].draw(); dirty = false; } requestAnimationFrame(render); }
-  requestAnimationFrame(render);
-  canvas.addEventListener("click", function () { document.getElementById("hint").style.display = "none"; });
+  var c = document.getElementById('stars'), g = c.getContext('2d'), stars = [];
+  function size(){ c.width = innerWidth; c.height = innerHeight; }
+  size(); addEventListener('resize', size);
+  for (var i = 0; i < 140; i++) stars.push({x: Math.random(), y: Math.random(), s: Math.random()*1.6 + .3, v: Math.random()*.0004 + .0001});
+  var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function draw(){
+    g.clearRect(0, 0, c.width, c.height);
+    for (var i = 0; i < stars.length; i++){
+      var s = stars[i]; if (!still){ s.y += s.v; if (s.y > 1) s.y = 0; }
+      g.fillStyle = 'rgba(255,255,255,' + (.35 + s.s/3) + ')';
+      g.fillRect(s.x*c.width, s.y*c.height, s.s, s.s);
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
 })();
 </script>
-<script src="arcade.js"></script>
-<script>window.addEventListener("load", function () { setTimeout(start, 50); });</script>
 </body>
 </html>

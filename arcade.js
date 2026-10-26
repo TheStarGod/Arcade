@@ -41,8 +41,12 @@ HARD MODE LEADERBOARD FOR TROLL TRAPS(ONLY PRANAV CAN UPDATE)
 // -------------------------------------------------------------
 // UPDATE LOG (newest first). Add a new entry here for every update!
 // -------------------------------------------------------------
-var ARCADE_VERSION = "v12.2";
+var ARCADE_VERSION = "v12.3";
 var UPDATE_LOG = [
+    {v: "v12.3", title: "GAME LAUNCHER", lines: [
+        "NEW START SCREEN: PICK THE ARCADE OR STORM DUEL",
+        "BACK BUTTON ON THE HUB RETURNS TO THE START SCREEN",
+        "(THE BACK BUTTON ONLY SHOWS ON THE WEBSITE, NOT IN CODEHS)"]},
     {v: "v12.2", title: "TIDIER HUB", lines: [
         "BRICK BREAKER MOVED INSIDE PONG",
         "PONG MENU: PLAY AGAINST BOT, PLAY LOCAL, BRICK BREAKER"]},
@@ -342,6 +346,10 @@ var dinoDots = [];
 // -------------------------------------------------------------
 // ENTRY POINT
 // -------------------------------------------------------------
+// Back to the launcher page. Only on the GitHub Pages website; inside CodeHS there is no launcher.
+var ON_WEBSITE = (typeof location !== "undefined" && /github\.io$/.test(location.hostname));
+function goToLauncher() { if (ON_WEBSITE) location.href = "arcade.html"; }
+
 function start() {
     login();          // name tag + optional password (saves scores and customizations)
     showArcadeHub();
@@ -1021,6 +1029,7 @@ function showArcadeHub() {
     }, 8);
     nMakeButton(168, 384, 130, 22, "#854d0e", "LEADERBOARD", function () { showLeaderboard(0); }, 8);
     nMakeButton(306, 384, 86, 22, "#1f2937", "UPDATES", function () { showUpdateLog(0); }, 8);
+    if (ON_WEBSITE) nMakeButton(10, 412, 76, 18, "#4c1d95", "BACK", goToLauncher, 7);
 
     mkCText("Q / ESC = PAUSE OR MENU", 200, 426, "7pt Courier", "#9ca3af");
     mkRText(ARCADE_VERSION, 394, 474, "bold 8pt Courier", "#6b7280");

@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Pranav and Advik's Arcade</title>
+<style>
+  body { margin: 0; background: #05050f; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: Courier, monospace; }
+  canvas { background: #000; image-rendering: pixelated; box-shadow: 0 0 40px rgba(99,102,241,0.35); }
+  #hint { position: fixed; bottom: 8px; width: 100%; text-align: center; color: #475569; font-size: 11px; }
+</style>
+</head>
+<body>
+<canvas id="game" width="400" height="480"></canvas>
+<div id="hint">click the game once so it hears your keyboard</div>
+<script>
+// ---- A tiny stand-in for the CodeHS graphics library ----
+// It supports everything arcade.js uses: Rectangle, Circle, Text, Line, add/remove,
+// setTimer/stopTimer, mouse + keyboard methods, Randomizer, Keyboard, Color, prompt.
+(function () {
+  var canvas = document.getElementById("game");
+  var ctx = canvas.getContext("2d");
+  var objs = [];
+  var dirty = true;
+
+  function Shape() { this.x = 0; this.y = 0; this.color = "#000000"; }
+  Shape.prototype.setPosition = function (x, y) { this.x = x; this.y = y; dirty = true; };
+  Shape.prototype.setColor = function (c) { this.color = c; dirty = true; };
+  Shape.prototype.move = function (dx, dy) { this.x += dx; this.y += dy; dirty = true; };
+  Shape.prototype.getX = function () { return this.x; };
+  Shape.prototype.getY = function () { return this.y; };
+
+  function Rectangle(w, h) { Shape.call(this); this.w = w; this.h = h; }
+  Rectangle.prototype = Object.create(Shape.prototype);
+  Rectangle.prototype.getWidth = function () { return this.w; };
+  Rectangle.prototype.getHeight = function () { return this.h; };
+  Rectangle.prototype.setSize = function (w, h) { this.w = w; this.h = h; dirty = true; };
+  Rectangle.prototype.draw = function () { ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.w, this.h); };
+
+  function Circle(r) { Shape.call(this); this.r = r; }
+  Circle.prototype = Object.create(Shape.prototype);
+  Circle.prototype.getRadius = function () { return this.r; };
+  Circle.prototype.setRadius = function (r) { this.r = r; dirty = true; };
+  Circle.prototype.getWidth = function () { return this.r * 2; };
+  Circle.prototype.getHeight = function () { return this.r * 2; };
+  Circle.prototype.draw = function () { ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, Math.max(0, this.r), 0, Math.PI * 2); ctx.fill(); };
+
+  function Line(x1, y1, x2, y2) { Shape.call(this); this.x = x1; this.y = y1; this.ex = x2; this.ey = y2; this.lw = 1; }
+  Line.prototype = Object.create(Shape.prototype);
+  Line.prototype.setEndpoint = function (x, y) { this.ex = x; this.ey = y; dirty = true; };
+  Line.prototype.setLineWidth = function (w) { this.lw = w; };
+  Line.prototype.move = function (dx, dy) { this.x += dx; this.y += dy; this.ex += dx; this.ey += dy; dirty = true; };
+  Line.prototype.draw = function () { ctx.strokeStyle = this.color; ctx.lineWidth = this.lw; ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.ex, this.ey); ctx.stroke(); };
+
+  function Text(t, font) { Shape.call(this); this.t = String(t); this.font = normFont(font || "12pt Arial"); }
+  Text.prototype = Object.create(Shape.prototype);
+  function normFont(f) { return f.replace(/(\d+)pt/, function (m, n) { return Math.round(n * 1.333) + "px"; }); }
+  Text.prototype.setText = function (t) { this.t = String(t); dirty = true; };
+  Text.prototype.getText = function () { return this.t; };
+  Text.prototype.setFont = function (f) { this.font = normFont(f); dirty = true; };
+  Text.prototype.getWidth = function () { ctx.font = this.font; return ctx.measureText(this.t).width; };
+  Text.prototype.getHeight = function () { return parseInt(this.font, 10) || 16; };
+  Text.prototype.draw = function () { ctx.font = this.font; ctx.fillStyle = this.color; ctx.textBaseline = "alphabetic"; ctx.fillText(this.t, this.x, this.y); };
+
+  window.Rectangle = Rectangle; window.Circle = Circle; window.Line = Line; window.Text = Text;
+  window.Color = { white: "#ffffff", black: "#000000", red: "#ff0000", green: "#00ff00", blue: "#0000ff", yellow: "#ffff00", orange: "#ffa500", purple: "#800080", gray: "#808080", grey: "#808080", cyan: "#00ffff", magenta: "#ff00ff" };
+  window.Keyboard = { SPACE: 32, UP: 38, DOWN: 40, LEFT: 37, RIGHT: 39, ENTER: 13, letter: function (c) { return c.toUpperCase().charCodeAt(0); } };
+  window.Randomizer = {
+    nextInt: function (a, b) { return a + Math.floor(Math.random() * (b - a + 1)); },
+    nextFloat: function (a, b) { return a + Math.random() * (b - a); },
+    nextBoolean: function () { return Math.random() < 0.5; },
+    nextColor: function () { return "#" + Math.floor(Math.random() * 16777215).toString(16); }
+  };
+  window.getWidth = function () { return canvas.width; };
+  window.getHeight = function () { return canvas.height; };
+  window.add = function (o) { objs.push(o); dirty = true; };
+  window.remove = function (o) { var i = objs.indexOf(o); if (i >= 0) objs.splice(i, 1); dirty = true; };
+  window.removeAll = function () { objs = []; dirty = true; };
+  window.getElementAt = function (x, y) { for (var i = objs.length - 1; i >= 0; i--) { var o = objs[i]; if (o instanceof Rectangle && x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h) return o; if (o instanceof Circle && (x - o.x) * (x - o.x) + (y - o.y) * (y - o.y) <= o.r * o.r) return o; } return null; };
+  window.setBackgroundColor = function (c) { canvas.style.background = c; };
+
+  var timers = [];
+  window.setTimer = function (fn, ms) { stopTimer(fn); timers.push({ fn: fn, id: setInterval(fn, ms) }); };
+  window.stopTimer = function (fn) { for (var i = timers.length - 1; i >= 0; i--) if (timers[i].fn === fn) { clearInterval(timers[i].id); timers.splice(i, 1); } };
+
+  function evt(e) { var r = canvas.getBoundingClientRect(); var x = (e.clientX - r.left) * canvas.width / r.width, y = (e.clientY - r.top) * canvas.height / r.height; return { getX: function () { return x; }, getY: function () { return y; } }; }
+  window.mouseClickMethod = function (fn) { canvas.addEventListener("click", function (e) { fn(evt(e)); }); };
+  window.mouseMoveMethod = function (fn) { canvas.addEventListener("mousemove", function (e) { fn(evt(e)); }); };
+  window.mouseDownMethod = function (fn) { canvas.addEventListener("mousedown", function (e) { fn(evt(e)); }); };
+  window.mouseUpMethod = function (fn) { canvas.addEventListener("mouseup", function (e) { fn(evt(e)); }); };
+  window.mouseDragMethod = function (fn) { canvas.addEventListener("mousemove", function (e) { if (e.buttons) fn(evt(e)); }); };
+  window.keyDownMethod = function (fn) { window.addEventListener("keydown", function (e) { if ([32, 37, 38, 39, 40].indexOf(e.keyCode) >= 0) e.preventDefault(); fn(e); }); };
+  window.keyUpMethod = function (fn) { window.addEventListener("keyup", function (e) { fn(e); }); };
+
+  function render() { if (dirty) { ctx.clearRect(0, 0, canvas.width, canvas.height); for (var i = 0; i < objs.length; i++) objs[i].draw(); dirty = false; } requestAnimationFrame(render); }
+  requestAnimationFrame(render);
+  canvas.addEventListener("click", function () { document.getElementById("hint").style.display = "none"; });
+})();
+</script>
+<script src="arcade.js"></script>
+<script>window.addEventListener("load", function () { setTimeout(start, 50); });</script>
+</body>
+</html>
