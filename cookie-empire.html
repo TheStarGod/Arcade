@@ -42,32 +42,36 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
 .buff{background:rgba(0,0,0,.55);border:1px solid var(--gold);color:var(--gold);border-radius:8px;padding:4px 8px;font-size:12px;font-weight:800}
 
 #middle{overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:rgba(0,0,0,.12)}
-.strip{position:relative;flex-shrink:0;min-height:64px;border-radius:8px;padding:6px 10px 6px 132px;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,.12));border:1px solid var(--line);overflow:hidden}
-.strip h3{position:absolute;left:10px;top:8px;margin:0;font-size:11px;letter-spacing:.04em;color:var(--dim);width:116px;line-height:1.3}
-.strip h3 b{display:block;font-family:var(--font-display);font-weight:400;font-size:17px;line-height:1.1;margin-bottom:2px;color:var(--ink);letter-spacing:0;text-transform:none}
-.strip .units{font-size:22px;line-height:1.3;display:flex;flex-wrap:wrap;gap:2px}
-.strip .more{font-size:12px;color:var(--dim);font-weight:700}
+.strip{position:relative;flex-shrink:0;border-radius:6px;border:3px solid #2a1a0a;box-shadow:inset 0 0 0 2px rgba(255,255,255,.12),0 4px 0 rgba(0,0,0,.3);overflow:hidden;background:#000}
+.strip canvas{display:block;width:100%;height:90px;image-rendering:pixelated;image-rendering:crisp-edges}
+.strip h3{position:absolute;left:6px;top:6px;margin:0;font-size:11px;color:#fff;line-height:1.25;padding:3px 7px;background:rgba(20,10,0,.72);border:2px solid #000;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);border-radius:3px;text-shadow:1px 1px 0 #000;pointer-events:none}
+.strip h3 b{display:block;font-family:var(--font-display);font-weight:400;font-size:15px;line-height:1.1;margin-bottom:1px;color:var(--ink);letter-spacing:0;text-transform:none}
+.strip .count{position:absolute;right:6px;bottom:4px;font-family:var(--font-display);font-size:20px;color:#fff;text-shadow:2px 2px 0 #000;pointer-events:none}
 #middle .empty{color:var(--dim);text-align:center;padding:40px 10px;line-height:1.6}
 
 #store{overflow:auto;border-left:4px solid rgba(0,0,0,.35);background:rgba(0,0,0,.2);display:grid;align-content:start}
 .sec{padding:10px 12px;border-bottom:1px solid var(--line)}
 .sec h2{margin:0 0 8px;font-family:var(--font-display);font-weight:400;font-size:20px;display:flex;justify-content:space-between;align-items:center}
 #upgrades{display:flex;flex-wrap:wrap;gap:5px;min-height:10px}
-.up{width:46px;height:46px;border-radius:8px;border:2px solid rgba(255,255,255,.25);background:#3b2a19;display:grid;place-items:center;font-size:22px;cursor:pointer;position:relative;padding:0}
-.up small{position:absolute;bottom:1px;right:3px;font-size:9px;font-weight:800;color:var(--gold)}
+.up{width:46px;height:46px;border-radius:4px;border:3px solid #2a1a0a;background:#3b2a19;display:grid;place-items:center;cursor:pointer;position:relative;padding:0;box-shadow:inset 0 0 0 2px var(--tier,#c9852e)}
+.up img,.ach img{width:32px;height:32px;image-rendering:pixelated;image-rendering:crisp-edges}
+.up small{position:absolute;bottom:0;right:2px;font-size:9px;font-weight:800;color:var(--gold);text-shadow:1px 1px 0 #000}
 .up.cant{filter:grayscale(.7) brightness(.65)}
 .modes{display:flex;gap:4px}
 .modes button{font-size:12px;font-weight:800;padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.06);cursor:pointer}
 .modes button[aria-pressed="true"]{background:var(--gold);color:#2b1a00;border-color:var(--gold)}
 .bld{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;text-align:left;padding:8px 10px;border:0;border-bottom:1px solid rgba(255,255,255,.07);background:linear-gradient(90deg,rgba(201,133,46,.18),transparent);cursor:pointer}
 .bld:hover{background:linear-gradient(90deg,rgba(255,210,90,.28),rgba(255,255,255,.04))}
-.bld .ic{width:48px;height:48px;border-radius:10px;background:rgba(0,0,0,.3);display:grid;place-items:center;font-size:28px}
+.bld .ic{width:40px;height:48px;border:2px solid #000;border-radius:3px;image-rendering:pixelated;image-rendering:crisp-edges;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
 .bld .nm{font-family:var(--font-display);font-size:19px;line-height:1.1}
 .bld .pr{font-size:13px;font-weight:800;color:var(--good)}
 .bld.cant .pr{color:var(--bad)}
 .bld.cant{opacity:.75}
 .bld .own{font-family:var(--font-display);font-size:30px;color:rgba(255,255,255,.35);min-width:40px;text-align:right}
 .bld.locked .nm,.bld.locked .ic{filter:brightness(0);opacity:.6}
+#away{position:fixed;z-index:22;left:50%;top:56px;transform:translateX(-50%);width:min(440px,calc(100% - 24px));padding:14px 16px;border-radius:10px;background:#13223a;border:3px solid var(--gold);box-shadow:0 10px 30px rgba(0,0,0,.5);display:grid;gap:6px;text-align:center}
+#away b{font-family:var(--font-display);font-weight:400;font-size:22px;color:var(--gold)}
+#away button{justify-self:center}
 
 #tip{position:fixed;z-index:20;max-width:320px;padding:10px 12px;border-radius:10px;background:rgba(10,14,26,.96);border:1px solid var(--gold);pointer-events:none;font-size:13px;line-height:1.45;box-shadow:0 8px 30px rgba(0,0,0,.5)}
 #tip b{font-family:var(--font-display);font-weight:400;font-size:17px}
@@ -75,9 +79,13 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
 #tip q{display:block;color:var(--dim);font-style:italic;margin-top:4px}
 #tip q::before,#tip q::after{content:""}
 
-.golden{position:fixed;z-index:15;width:72px;height:72px;border:0;padding:0;border-radius:50%;cursor:pointer;background:radial-gradient(circle at 35% 30%,#fff7c2,#ffd25a 40%,#d99a16 75%,#9c6a08);box-shadow:0 0 30px rgba(255,210,90,.9);animation:gpulse 1.2s ease-in-out infinite}
-.golden::after{content:"";position:absolute;inset:18px;border-radius:50%;background:radial-gradient(circle,#b77d0c 0 18%,transparent 19%) 6px 4px/22px 22px}
-@keyframes gpulse{50%{transform:scale(1.12) rotate(8deg)}}
+.golden{position:fixed;z-index:15;width:86px;height:86px;border:0;padding:0;border-radius:50%;cursor:pointer;background:transparent center/100% 100% no-repeat;filter:drop-shadow(0 0 10px rgba(255,214,90,.95)) drop-shadow(0 4px 6px rgba(0,0,0,.35));animation:gbob 2.4s ease-in-out infinite;isolation:isolate}
+.golden::before{content:"";position:absolute;inset:-34px;z-index:-1;border-radius:50%;background:repeating-conic-gradient(rgba(255,240,170,.55) 0 9deg,transparent 9deg 24deg);-webkit-mask:radial-gradient(circle,#000 28%,transparent 68%);mask:radial-gradient(circle,#000 28%,transparent 68%);animation:gspin 7s linear infinite}
+.golden::after{content:"";position:absolute;width:10px;height:10px;left:14px;top:12px;background:#fff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:gtwinkle 1.4s ease-in-out infinite}
+.golden.fading{opacity:.35;transition:opacity 1s}
+@keyframes gbob{50%{transform:translateY(-6px) rotate(6deg) scale(1.05)}}
+@keyframes gspin{to{transform:rotate(360deg)}}
+@keyframes gtwinkle{50%{transform:scale(.3);opacity:.4}}
 .pop{position:fixed;z-index:16;pointer-events:none;font-weight:800;font-size:16px;color:#fff;text-shadow:0 2px 4px #000;transition:transform 1.2s ease-out,opacity 1.2s;white-space:nowrap}
 
 .overlay{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:16px;background:rgba(5,10,20,.75);overflow:auto}
@@ -98,7 +106,8 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
 .stats{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px}
 .stats span{color:var(--dim)}
 .achs{display:flex;flex-wrap:wrap;gap:5px}
-.ach{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;font-size:20px;background:rgba(255,255,255,.08);border:1px solid var(--line);cursor:help}
+.ach{width:40px;height:40px;border-radius:4px;display:grid;place-items:center;background:rgba(255,255,255,.08);border:2px solid #000;cursor:help}
+.ach img{width:28px;height:28px}
 .ach.no{filter:grayscale(1) brightness(.4)}
 .btn{font-weight:800;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.08);cursor:pointer}
 .btn.gold{background:linear-gradient(180deg,#ffe6a0,var(--gold));color:#2b1a00;border:0}
@@ -149,6 +158,7 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
   </aside>
 </main>
 <div id="tip" hidden></div>
+<div id="away" hidden role="status"><b>Welcome back!</b><span id="away-text"></span><button class="btn gold" type="button" id="away-ok">Nice!</button></div>
 
 <div class="overlay" id="stats" hidden>
   <div class="card"><h2>Stats <button class="btn" type="button" data-close>Close</button></h2><div class="cbody" id="stats-body"></div><div class="btnrow" id="ascend-row"></div></div>
@@ -167,9 +177,345 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
   <button type="button" data-dev="golden">Spawn golden cookie</button>
   <button type="button" data-dev="frenzy">Frenzy now</button>
   <button type="button" data-dev="click">Click frenzy now</button>
+  <button type="button" data-dev="off">Turn Open Sesame off</button>
   <button type="button" data-dev="close">Hide panel</button>
 </div>
 
+<script>
+/* Pixel art for Cookie Empire: animated building scenes, store icons, and the
+   realistic big cookie + golden cookie images. Loaded by cookie-empire.html. */
+(function(){
+'use strict';
+const PX = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w || 1, h || 1); };
+function line(g, c, x0, y0, x1, y1){
+  x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1);
+  const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+  let e = dx + dy;
+  for (let n = 0; n < 200; n++){ PX(g, c, x0, y0); if (x0 === x1 && y0 === y1) break; const e2 = 2*e; if (e2 >= dy){ e += dy; x0 += sx; } if (e2 <= dx){ e += dx; y0 += sy; } }
+}
+// fixed pseudo-random so backgrounds don't flicker
+const rnd = s => { s = Math.sin(s*127.1)*43758.5453; return s - Math.floor(s); };
+const SKIN = '#f0c49a', SKIN2 = '#c98d64';
+const head = (g, x, y, skin) => { PX(g, skin || SKIN, x, y, 4, 3); PX(g, '#2a1a10', x + 1, y + 1); PX(g, '#2a1a10', x + 3, y + 1); };
+
+/* ---------- scenes: background + one worker. G is the ground row, f is the animation frame ---------- */
+const S = {};
+S.cursor = {
+  bg(g, w, h, t){ PX(g, '#4c5f84', 0, 0, w, h); for (let x = 0; x < w; x += 12) PX(g, '#566a92', x, 0, 6, h - 6); PX(g, '#8a5a30', 0, h - 6, w, 6); PX(g, '#6b4422', 0, h - 6, w, 1); },
+  worker(g, x, G, f){
+    PX(g, '#c98a3e', x + 4, G - 2, 7, 2); PX(g, '#d9a35a', x + 5, G - 3, 5, 1); PX(g, '#4a2611', x + 6, G - 2); PX(g, '#4a2611', x + 9, G - 3);
+    const dy = [0, 0, 1, 3, 1, 0][f % 6];
+    PX(g, '#3a7bd5', x + 5, G - 15 + dy, 5, 2);
+    PX(g, '#ffffff', x + 5, G - 13 + dy, 5, 4); PX(g, '#ffffff', x + 6, G - 9 + dy, 2, 4);
+    PX(g, '#c8cdd8', x + 5, G - 10 + dy, 5, 1); PX(g, '#c8cdd8', x + 8, G - 9 + dy, 1, 3);
+    if (dy === 3) { PX(g, '#ffe9a8', x + 3, G - 6); PX(g, '#ffe9a8', x + 11, G - 6); }
+  }
+};
+S.grandma = {
+  bg(g, w, h){ PX(g, '#e8c9a0', 0, 0, w, h); for (let x = 0; x < w; x += 4) for (let y = 0; y < h - 6; y += 4) if ((x + y)%8 === 0) PX(g, '#efd6b4', x, y, 4, 4); PX(g, '#9a6a3a', 0, h - 6, w, 6); PX(g, '#7a4a22', 0, h - 6, w, 1); },
+  worker(g, x, G, f){
+    PX(g, '#8a5a30', x + 9, G - 6, 8, 1); PX(g, '#6b4422', x + 10, G - 5, 1, 5); PX(g, '#6b4422', x + 15, G - 5, 1, 5);
+    PX(g, '#f2dfb8', x + 11, G - 7, 5, 1);
+    PX(g, '#5a4a6a', x + 3, G - 2, 1, 2); PX(g, '#5a4a6a', x + 5, G - 2, 1, 2);
+    PX(g, '#a04a8a', x + 2, G - 9, 5, 7); PX(g, '#ffffff', x + 3, G - 8, 3, 5);
+    head(g, x + 2, G - 12);
+    PX(g, '#d8d8e0', x + 1, G - 14, 6, 2); PX(g, '#d8d8e0', x, G - 15, 2, 2);
+    PX(g, '#333344', x + 3, G - 11); PX(g, '#333344', x + 5, G - 11);
+    const r = [0, 1, 2, 3, 2, 1][f % 6];
+    PX(g, SKIN, x + 7, G - 8, 2 + r, 1);
+    PX(g, '#c48a4a', x + 9 + r, G - 8, 5, 1); PX(g, '#8a5a30', x + 8 + r, G - 8); PX(g, '#8a5a30', x + 14 + r, G - 8);
+  }
+};
+S.farm = {
+  bg(g, w, h){ PX(g, '#9fd4ff', 0, 0, w, h); PX(g, '#fff3a0', w - 10, 2, 5, 5); PX(g, '#5fa84a', 0, h - 6, w, 6); for (let x = 0; x < w; x += 6) PX(g, '#7a5230', x, h - 4, 4, 1); },
+  worker(g, x, G, f, t, i){
+    const hgt = 3 + Math.floor(((t*.35 + i*.37) % 1)*6);
+    PX(g, '#3c8a3a', x + 14, G - hgt, 1, hgt); PX(g, '#3c8a3a', x + 15, G - hgt + 2, 2, 1);
+    PX(g, '#c98a3e', x + 13, G - hgt - 3, 3, 3); PX(g, '#4a2611', x + 14, G - hgt - 2);
+    PX(g, '#5a3a20', x + 3, G - 2, 4, 2); PX(g, '#3a5fb0', x + 3, G - 8, 4, 6); PX(g, '#d04040', x + 3, G - 9, 4, 2);
+    head(g, x + 3, G - 12);
+    PX(g, '#e8c45a', x + 2, G - 13, 6, 1); PX(g, '#e8c45a', x + 3, G - 15, 4, 2); PX(g, '#c9a43a', x + 3, G - 13, 4, 1);
+    const k = f % 4;
+    const ends = [[7, -17], [11, -14], [11, -2], [11, -14]][k];
+    line(g, '#8a5a30', x + 7, G - 8, x + ends[0], G + ends[1]);
+    PX(g, '#9aa3b4', x + ends[0] - 1, G + ends[1] - 1, 3, 1);
+    if (k === 2){ PX(g, '#7a5230', x + 12, G - 2); PX(g, '#7a5230', x + 13, G - 3); }
+  }
+};
+S.mine = {
+  bg(g, w, h){ PX(g, '#3b2a1f', 0, 0, w, h); for (let k = 0; k < w/3; k++) PX(g, '#2c1f16', rnd(k)*w, rnd(k + 9)*(h - 6), 2, 2); PX(g, '#5a5a64', 0, h - 6, w, 6); PX(g, '#44444c', 0, h - 6, w, 1); },
+  worker(g, x, G, f, t){
+    PX(g, '#7d7d88', x + 11, G - 7, 6, 7); PX(g, '#9a9aa6', x + 12, G - 7, 3, 1); PX(g, '#4a2611', x + 12, G - 5, 2, 2); PX(g, '#4a2611', x + 15, G - 3); PX(g, '#c98a3e', x + 14, G - 6);
+    PX(g, '#3a3a4a', x + 3, G - 4, 4, 4); PX(g, '#e07a1a', x + 3, G - 8, 4, 4); PX(g, '#ffe36a', x + 3, G - 6, 4, 1);
+    head(g, x + 3, G - 11);
+    PX(g, '#ffd84a', x + 2, G - 13, 6, 2); PX(g, '#fffbe0', x + 6, G - 12);
+    g.globalAlpha = .18; PX(g, '#fffbe0', x + 7, G - 13, 6, 4); g.globalAlpha = 1;
+    const k = f % 4;
+    if (k === 0){ line(g, '#8a5a30', x + 7, G - 8, x + 8, G - 16); PX(g, '#b8c0d8', x + 6, G - 17, 5, 1); }
+    else if (k === 1 || k === 3){ line(g, '#8a5a30', x + 7, G - 8, x + 11, G - 13); PX(g, '#b8c0d8', x + 10, G - 15, 1, 4); }
+    else { line(g, '#8a5a30', x + 7, G - 8, x + 11, G - 8); PX(g, '#b8c0d8', x + 11, G - 10, 1, 4); PX(g, '#4a2611', x + 13, G - 11); PX(g, '#c98a3e', x + 15, G - 12); PX(g, '#ffe9a8', x + 12, G - 12); }
+  }
+};
+S.factory = {
+  bg(g, w, h, t){
+    PX(g, '#8a8f9c', 0, 0, w, h);
+    for (let x = 4; x < w; x += 20){ PX(g, '#5c6a86', x, 3, 8, 6); PX(g, '#9fd4ff', x + 1, 4, 3, 4); PX(g, '#9fd4ff', x + 5, 4, 2, 4); }
+    PX(g, '#3a3d48', 0, h - 9, w, 3);
+    const off = (t*16) % 6;
+    for (let x = -6 + off; x < w; x += 6) PX(g, '#5a5f6c', x, h - 9, 2, 1);
+    for (let x = ((t*16) % 14) - 14; x < w; x += 14){ PX(g, '#c98a3e', x, h - 11, 4, 2); PX(g, '#4a2611', x + 1, h - 11); }
+    PX(g, '#55596a', 0, h - 6, w, 6);
+  },
+  worker(g, x, G, f){
+    const p = [0, 2, 4, 2][f % 4];
+    PX(g, '#d8d8e0', x + 4, G - 22, 6, 2); PX(g, '#b0b0bc', x + 6, G - 20, 2, 4);
+    PX(g, '#e0a020', x + 5, G - 16, 4, 2 + p); PX(g, '#444444', x + 3, G - 14 + p, 8, 1);
+    if (p === 4) PX(g, '#ffe9a8', x + 2, G - 10);
+  }
+};
+S.bank = {
+  bg(g, w, h){ PX(g, '#e6e2d8', 0, 0, w, h); for (let x = 2; x < w; x += 24){ PX(g, '#d0cabc', x, 2, 4, h - 8); PX(g, '#bfb8a8', x - 1, 2, 6, 1); } PX(g, '#9a8a6a', 0, h - 6, w, 6); },
+  worker(g, x, G, f, t, i){
+    PX(g, '#7a4a2a', x + 8, G - 5, 9, 5); PX(g, '#5a3420', x + 8, G - 5, 9, 1);
+    const n = 2 + (Math.floor(t*2 + i) % 3);
+    for (let k = 0; k < n; k++) PX(g, k % 2 ? '#e8b830' : '#ffd84a', x + 12, G - 7 - k, 3, 1);
+    const b = [0, -2, -3, -2][f % 4]; PX(g, '#ffd84a', x + 15, G - 9 + b, 2, 2);
+    PX(g, '#2a3a5a', x + 3, G - 8, 4, 8); PX(g, '#ffffff', x + 4, G - 8, 2, 2);
+    head(g, x + 3, G - 11); PX(g, '#3ad06a', x + 2, G - 12, 6, 1); PX(g, '#6a4a2a', x + 3, G - 13, 4, 1);
+  }
+};
+S.temple = {
+  bg(g, w, h){ PX(g, '#e6c88a', 0, 0, w, h); for (let x = 6; x < w; x += 20){ PX(g, '#f2e2b8', x, 3, 4, h - 9); PX(g, '#d9c08a', x - 1, 2, 6, 2); } PX(g, '#c9a65a', 0, h - 6, w, 6); },
+  worker(g, x, G, f, t, i){
+    const bow = f % 4 === 2 ? 2 : 0;
+    PX(g, '#fafafa', x + 3, G - 9, 4, 9); PX(g, '#e8b830', x + 3, G - 3, 4, 1); PX(g, '#e8b830', x + 5, G - 9, 1, 6);
+    head(g, x + 3 + (bow ? 1 : 0), G - 12 + bow, SKIN2);
+    const bob = Math.round(Math.sin(t*2 + i)*1.5);
+    g.globalAlpha = .35; PX(g, '#ffe9a0', x + 10, G - 18 + bob, 8, 7); g.globalAlpha = 1;
+    PX(g, '#ffd84a', x + 12, G - 16 + bob, 4, 3); PX(g, '#fff6c0', x + 12, G - 16 + bob, 2, 1); PX(g, '#c8901a', x + 14, G - 15 + bob);
+  }
+};
+S.wizard = {
+  bg(g, w, h, t){ PX(g, '#2a1f4a', 0, 0, w, h); for (let k = 0; k < w/4; k++) if (Math.sin(t*3 + k) > -.3) PX(g, '#e8e0ff', rnd(k)*w, rnd(k + 3)*(h - 8)); PX(g, '#3a2a5a', 0, h - 6, w, 6); },
+  worker(g, x, G, f, t){
+    PX(g, '#6a3ab0', x + 2, G - 10, 6, 10); PX(g, '#5a2a9a', x + 2, G - 10, 1, 10);
+    PX(g, '#6a3ab0', x + 2, G - 13, 6, 1); PX(g, '#6a3ab0', x + 3, G - 15, 4, 2); PX(g, '#6a3ab0', x + 4, G - 17, 2, 2); PX(g, '#6a3ab0', x + 5, G - 18); PX(g, '#ffd84a', x + 4, G - 14);
+    head(g, x + 3, G - 12); PX(g, '#eeeeee', x + 3, G - 10, 4, 3);
+    PX(g, '#8a5a30', x + 9, G - 14, 1, 14);
+    const col = ['#7fd8ff', '#ff6bd6', '#ffd84a', '#7cf29a'][f % 4];
+    PX(g, col, x + 8, G - 16, 3, 2);
+    if (f % 4 === 1 || f % 4 === 2){ PX(g, col, x + 12, G - 18); PX(g, col, x + 7, G - 19); PX(g, col, x + 12, G - 14); }
+    if (f % 4 === 3){ PX(g, '#c98a3e', x + 13, G - 15, 3, 3); PX(g, '#4a2611', x + 14, G - 14); }
+  }
+};
+S.ship = {
+  bg(g, w, h, t){ PX(g, '#0a0a1a', 0, 0, w, h); for (let k = 0; k < w/3; k++) PX(g, '#c8d0ff', rnd(k)*w, rnd(k + 7)*(h - 6)); PX(g, '#c98a3e', w - 14, 2, 8, 8); PX(g, '#4a2611', w - 12, 4, 2, 2); PX(g, '#55555f', 0, h - 6, w, 6); },
+  worker(g, x, G, f, t, i){
+    const ph = (t*.3 + i*.29) % 1, yo = ph < .45 ? 0 : -Math.round((ph - .45)*90);
+    if (yo < -40) return;
+    PX(g, '#f0f0f0', x + 6, G - 13 + yo, 4, 11); PX(g, '#e04040', x + 7, G - 15 + yo, 2, 2); PX(g, '#e04040', x + 5, G - 5 + yo, 1, 3); PX(g, '#e04040', x + 10, G - 5 + yo, 1, 3);
+    PX(g, '#4cb8ff', x + 7, G - 11 + yo, 2, 2);
+    if (ph > .35){ PX(g, f % 2 ? '#ffd84a' : '#ff8a1f', x + 7, G - 2 + yo, 2, 2 + f % 3); }
+  }
+};
+S.lab = {
+  bg(g, w, h){ PX(g, '#1f3a3a', 0, 0, w, h); for (let x = 0; x < w; x += 16) PX(g, '#2c5050', x, 6, 12, 1); PX(g, '#5a3a2a', 0, h - 6, w, 6); PX(g, '#6a4a3a', 0, h - 6, w, 1); },
+  worker(g, x, G, f, t, i){
+    const cols = ['#7cf29a', '#ff6bd6', '#ffd84a'];
+    for (let k = 0; k < 3; k++){
+      const xx = x + 2 + k*5;
+      PX(g, '#cfe8ee', xx + 1, G - 9, 1, 3); PX(g, cols[(k + i) % 3], xx, G - 6, 3, 3); PX(g, '#cfe8ee', xx, G - 6, 3, 1);
+      const by = (t*6 + k*2 + i) % 7; PX(g, '#ffffff', xx + 1, G - 10 - by);
+    }
+  }
+};
+S.portal = {
+  bg(g, w, h){ PX(g, '#120a20', 0, 0, w, h); PX(g, '#221535', 0, h - 6, w, 6); },
+  worker(g, x, G, f, t, i){
+    const cx = x + 9, cy = G - 11;
+    PX(g, '#05010a', cx - 4, cy - 6, 9, 12);
+    for (let k = 0; k < 28; k++){ const a = k/28*Math.PI*2 + t*3 + i; PX(g, k % 2 ? '#b06bff' : '#ff6bd6', cx + Math.cos(a)*5, cy + Math.sin(a)*7); }
+    const o = (t*8 + i*3) % 9; PX(g, '#c98a3e', cx - 1 + o, cy, 2, 2);
+  }
+};
+S.time = {
+  bg(g, w, h){ PX(g, '#141a3a', 0, 0, w, h); for (let x = 0; x < w; x += 10) PX(g, '#1e2650', x, 0, 1, h - 6); PX(g, '#2a3058', 0, h - 6, w, 6); },
+  worker(g, x, G, f, t, i){
+    const cx = x + 9, cy = G - 11;
+    PX(g, '#fff8e0', cx - 5, cy - 5, 11, 11); PX(g, '#c8a040', cx - 6, cy - 5, 1, 11); PX(g, '#c8a040', cx + 6, cy - 5, 1, 11); PX(g, '#c8a040', cx - 5, cy - 6, 11, 1); PX(g, '#c8a040', cx - 5, cy + 6, 11, 1);
+    const a = t*3 + i, b = t*.3 + i;
+    line(g, '#2a2a3a', cx, cy, cx + Math.cos(a)*4, cy + Math.sin(a)*4);
+    line(g, '#d04040', cx, cy, cx + Math.cos(b)*3, cy + Math.sin(b)*3);
+  }
+};
+S.anti = {
+  bg(g, w, h){ PX(g, '#05050f', 0, 0, w, h); for (let k = 0; k < w/5; k++) PX(g, '#33335a', rnd(k + 2)*w, rnd(k + 5)*h); },
+  worker(g, x, G, f, t, i){
+    const cx = x + 9, cy = G - 11;
+    PX(g, '#ff5470', cx - 1, cy - 1, 2, 2); PX(g, '#4cb8ff', cx + 1, cy - 1, 1, 2); PX(g, '#4cb8ff', cx - 1, cy + 1, 2, 1);
+    for (let o = 0; o < 3; o++){ const a = t*4 + o*2.1 + i; const ex = Math.cos(a)*7, ey = Math.sin(a)*3; const rot = o*1.05; PX(g, '#7fd8ff', cx + ex*Math.cos(rot) - ey*Math.sin(rot), cy + ex*Math.sin(rot) + ey*Math.cos(rot)); }
+  }
+};
+S.prism = {
+  bg(g, w, h){ PX(g, '#0f0f22', 0, 0, w, h); PX(g, '#1b1b38', 0, h - 6, w, 6); },
+  worker(g, x, G, f, t){
+    for (let r = 0; r < 9; r++) PX(g, r < 2 ? '#ffffff' : '#bfe0ff', x + 8 - Math.floor(r/2), G - 15 + r, r + 1, 1);
+    PX(g, '#ffffff', x, G - 11, 5, 1);
+    const cols = ['#ff4f4f', '#ffa53a', '#ffe14a', '#4fe08a', '#4cb8ff', '#9b5cff'];
+    const len = 4 + (f % 3);
+    cols.forEach((c, k) => { for (let s = 0; s < len; s++) PX(g, c, x + 13 + s, G - 13 + k + Math.floor(s*(k - 2.5)/6)); });
+  }
+};
+S.luck = {
+  bg(g, w, h){ PX(g, '#2f7a3a', 0, 0, w, h); for (let k = 0; k < w/4; k++) PX(g, '#3f9a4a', rnd(k)*w, rnd(k + 1)*h, 2, 1); PX(g, '#256030', 0, h - 6, w, 6); },
+  worker(g, x, G, f, t, i){
+    PX(g, '#ffffff', x + 3, G - 7, 6, 6); PX(g, '#c8cdd8', x + 3, G - 2, 6, 1);
+    const face = (Math.floor(t*2 + i*2) % 6) + 1;
+    const pips = {1:[[2,2]], 2:[[1,1],[3,3]], 3:[[1,1],[2,2],[3,3]], 4:[[1,1],[3,1],[1,3],[3,3]], 5:[[1,1],[3,1],[2,2],[1,3],[3,3]], 6:[[1,1],[3,1],[1,2],[3,2],[1,3],[3,3]]}[face];
+    for (const [px, py] of pips) PX(g, '#222', x + 3 + px, G - 7 + py);
+    const cx = x + 13, cy = G - 9;
+    PX(g, '#3fd06a', cx - 2, cy - 2, 2, 2); PX(g, '#3fd06a', cx + 1, cy - 2, 2, 2); PX(g, '#3fd06a', cx - 2, cy + 1, 2, 2); PX(g, '#3fd06a', cx + 1, cy + 1, 2, 2); PX(g, '#256030', cx, cy + 2, 1, 4);
+    if (f % 4 === 0) PX(g, '#fff6c0', cx + 3, cy - 4);
+  }
+};
+
+/* ---------- strips ---------- */
+const STRIP_H = 30, SPACING = 19;
+function drawStrip(canvas, key, owned, t){
+  const g = canvas.getContext('2d'), w = canvas.width, h = canvas.height, sc = S[key];
+  g.imageSmoothingEnabled = false;
+  sc.bg(g, w, h, t);
+  const G = h - 6;
+  const x0 = 44; // leave room for the name label
+  const n = Math.min(owned, Math.max(1, Math.floor((w - x0 - 14)/SPACING)));
+  for (let i = 0; i < n; i++){
+    const x = x0 + i*SPACING + Math.round(rnd(i + key.length)*2);
+    const f = Math.floor(t*5 + i*1.7);
+    sc.worker(g, x, G, f, t, i);
+  }
+}
+
+/* ---------- icons ---------- */
+const iconCache = {};
+function buildingIcon(key){
+  if (iconCache[key]) return iconCache[key];
+  const c = document.createElement('canvas'); c.width = 20; c.height = 24;
+  const g = c.getContext('2d');
+  S[key].bg(g, 20, 24, 0);
+  S[key].worker(g, 1, 19, 1, .3, 0);
+  return iconCache[key] = c.toDataURL();
+}
+// small 12x12 sprites from text art
+const ART = {
+  cookie:['....oooo....','..oooooooo..','.oocooooooo.','.ooooocoooo.','oocoooooooco','oooooooooooo','ooooocoooooo','ocoooooocooo','.ooooooooco.','.oocooooooo.','..oooooooo..','....oooo....'],
+  golden:['....yyyy....','..yyyyyyyy..','.yywyyyyyyy.','.ywyyygyyyy.','yyyyyyyyyygy','yygyyyyyyyyy','yyyyyygyyyyy','yyyyyyyygyyy','.yyyyyyyyyy.','.yyygyyyyyy.','..yyyyyyyy..','....yyyy....'],
+  mouse:['.....k......','.....k......','....kk......','...wwww.....','..wwkkww....','..wwkkww....','..wwwwww....','..wwwwww....','..wwwwww....','..wwwwww....','...wwww.....','............'],
+  cat:['............','.o......o...','.oo....oo...','.oooooooo...','.okoooook...','.oooopooo...','.ooowwooo...','..oooooo..o.','..oooooo.o..','..oooooooo..','..o.o.o.o...','............'],
+  bolt:['......yy....','.....yy.....','....yy......','...yy.......','..yyyyyy....','......yy....','.....yy.....','....yy......','...yy.......','..y.........','............','............'],
+  arrow:['.....gg.....','....gggg....','...gggggg...','..gggggggg..','....gggg....','....gggg....','....gggg....','....gggg....','....gggg....','............','............','............'],
+  tag:['............','..rrrrrrr...','.rrrrrrrrr..','.rwrrrrrrrr.','.rrrrrrrrrr.','.rrrrrrrrr..','..rrrrrrr...','............','............','............','............','............'],
+  key:['............','..yyy.......','.y...y......','.y...yyyyyy.','.y...y..y.y.','..yyy...y...','............','............','............','............','............','............'],
+  angel:['...yyyyyy...','..y......y..','...yyyyyy...','............','.w..oooo..w.','ww.oooooo.ww','www.oooo.www','.ww.wwww.ww.','....wwww....','....wwww....','............','............']
+};
+const PAL = {o:'#c98a3e', c:'#4a2611', y:'#ffd84a', w:'#ffffff', g:'#4fe08a', k:'#222233', p:'#ff8aa8', r:'#ff5470'};
+function artIcon(name){
+  if (iconCache['art_' + name]) return iconCache['art_' + name];
+  const c = document.createElement('canvas'); c.width = 12; c.height = 12; const g = c.getContext('2d');
+  ART[name].forEach((row, y) => [...row].forEach((ch, x) => { if (ch !== '.') PX(g, PAL[ch], x, y); }));
+  return iconCache['art_' + name] = c.toDataURL();
+}
+
+/* ---------- the big cookie: a realistic baked cookie, rendered once to an image ---------- */
+function seeded(seed){ return () => { seed = (seed*16807) % 2147483647; return (seed - 1)/2147483646; }; }
+const STYLES = {
+  classic:{dough:['#e2ae66','#cf9447','#a8692a','#7a4517'], chip:['#6e3a1a','#3a1a08','#1c0a02'], oats:false},
+  white:  {dough:['#e2ae66','#cf9447','#a8692a','#7a4517'], chip:['#fffaf0','#efe2c4','#cdbb95'], oats:false},
+  double: {dough:['#7a4a2a','#5f3519','#43220d','#2a1306'], chip:['#fff3dc','#e9d6b0','#c8ae80'], oats:false},
+  oat:    {dough:['#e8c88e','#d4ac6a','#b08548','#83602c'], chip:['#7a3a3a','#4a1a1a','#2a0a0a'], oats:true},
+  golden: {dough:['#fff6c4','#ffd84a','#e0a826','#a8700e'], chip:['#fff3b0','#d9a020','#9c6a08'], oats:false}
+};
+function makeCookie(size, style){
+  const st = STYLES[style] || STYLES.classic, gold = style === 'golden';
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d'), R = size*.46, cx = size/2, cy = size/2, rand = seeded(gold ? 7 : 1234);
+  const ph = [rand()*6, rand()*6, rand()*6, rand()*6];
+  const pts = [];
+  for (let k = 0; k < 160; k++){
+    const a = k/160*Math.PI*2;
+    const r = R*(1 + .03*Math.sin(3*a + ph[0]) + .02*Math.sin(7*a + ph[1]) + .012*Math.sin(13*a + ph[2]) + .008*Math.sin(29*a + ph[3]) + (rand() - .5)*.008);
+    pts.push([cx + Math.cos(a)*r, cy + Math.sin(a)*r]);
+  }
+  const shape = () => { g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); };
+  // soft baked shadow underneath
+  g.save(); g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = size*.04; g.shadowOffsetY = size*.02; shape(); g.fillStyle = st.dough[2]; g.fill(); g.restore();
+  g.save(); shape(); g.clip();
+  const base = g.createRadialGradient(cx - R*.25, cy - R*.3, R*.1, cx, cy, R*1.02);
+  base.addColorStop(0, st.dough[0]); base.addColorStop(.55, st.dough[1]); base.addColorStop(.85, st.dough[2]); base.addColorStop(1, st.dough[3]);
+  g.fillStyle = base; g.fillRect(0, 0, size, size);
+  // browned rim
+  g.lineWidth = R*.16; g.strokeStyle = gold ? 'rgba(160,100,10,.35)' : 'rgba(110,60,20,.35)';
+  if ('filter' in g) g.filter = `blur(${Math.round(size*.015)}px)`;
+  shape(); g.stroke(); g.filter = 'none';
+  // crumbly surface: speckles light and dark
+  for (let k = 0; k < size*5; k++){
+    const a = rand()*Math.PI*2, r = Math.sqrt(rand())*R;
+    g.fillStyle = rand() < .5 ? (gold ? 'rgba(160,100,10,.18)' : 'rgba(90,45,15,.18)') : 'rgba(255,240,200,.18)';
+    g.beginPath(); g.arc(cx + Math.cos(a)*r, cy + Math.sin(a)*r, size*(.002 + rand()*.004), 0, Math.PI*2); g.fill();
+  }
+  // cracks from baking
+  for (let k = 0; k < 7; k++){
+    let a = rand()*Math.PI*2, r = R*(.15 + rand()*.35);
+    let x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
+    const pts2 = [[x, y]];
+    for (let s = 0; s < 6; s++){ a += (rand() - .5)*1.2; r += R*.07; x = cx + Math.cos(a)*r + (rand() - .5)*R*.05; y = cy + Math.sin(a)*r + (rand() - .5)*R*.05; pts2.push([x, y]); }
+    g.lineCap = 'round';
+    g.strokeStyle = gold ? 'rgba(150,95,10,.4)' : 'rgba(80,40,12,.45)'; g.lineWidth = size*.006;
+    g.beginPath(); pts2.forEach(([px, py], i) => i ? g.lineTo(px, py) : g.moveTo(px, py)); g.stroke();
+    g.strokeStyle = 'rgba(255,235,190,.35)'; g.lineWidth = size*.003;
+    g.beginPath(); pts2.forEach(([px, py], i) => i ? g.lineTo(px - size*.003, py - size*.004) : g.moveTo(px - size*.003, py - size*.004)); g.stroke();
+  }
+  if (st.oats){
+    for (let k = 0; k < 40; k++){ const a = rand()*Math.PI*2, r = Math.sqrt(rand())*R*.9; g.save(); g.translate(cx + Math.cos(a)*r, cy + Math.sin(a)*r); g.rotate(rand()*3); g.fillStyle = 'rgba(245,225,180,.8)'; g.beginPath(); g.ellipse(0, 0, size*.018, size*.008, 0, 0, Math.PI*2); g.fill(); g.restore(); }
+  }
+  // chocolate chips: irregular, with a shadow, shading and a glint
+  const chips = [];
+  for (let k = 0; k < 400 && chips.length < 19; k++){
+    const a = rand()*Math.PI*2, r = Math.sqrt(rand())*R*.8, s = R*(.07 + rand()*.06);
+    const x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
+    if (chips.every(o => Math.hypot(o.x - x, o.y - y) > o.s + s + R*.03)) chips.push({x, y, s, rot:rand()*6});
+  }
+  for (const ch of chips){
+    const blob = [];
+    for (let k = 0; k < 9; k++){ const a = k/9*Math.PI*2 + ch.rot, r = ch.s*(.75 + rand()*.45); blob.push([Math.cos(a)*r, Math.sin(a)*r*.85]); }
+    const path = (ox, oy) => { g.beginPath(); blob.forEach(([x, y], i) => i ? g.lineTo(ch.x + x + ox, ch.y + y + oy) : g.moveTo(ch.x + x + ox, ch.y + y + oy)); g.closePath(); };
+    g.fillStyle = 'rgba(40,18,4,.35)'; path(ch.s*.12, ch.s*.18); g.fill();
+    const cg = g.createRadialGradient(ch.x - ch.s*.35, ch.y - ch.s*.4, ch.s*.05, ch.x, ch.y, ch.s*1.1);
+    cg.addColorStop(0, st.chip[0]); cg.addColorStop(.55, st.chip[1]); cg.addColorStop(1, st.chip[2]);
+    g.fillStyle = cg; path(0, 0); g.fill();
+    g.fillStyle = 'rgba(255,255,255,.35)'; g.beginPath(); g.ellipse(ch.x - ch.s*.3, ch.y - ch.s*.35, ch.s*.22, ch.s*.12, -.6, 0, Math.PI*2); g.fill();
+  }
+  // light from the top left, shade to the bottom right
+  const hl = g.createRadialGradient(cx - R*.45, cy - R*.5, 0, cx - R*.45, cy - R*.5, R*1.1);
+  hl.addColorStop(0, 'rgba(255,250,230,.28)'); hl.addColorStop(1, 'rgba(255,250,230,0)');
+  g.fillStyle = hl; g.fillRect(0, 0, size, size);
+  const sh = g.createRadialGradient(cx + R*.5, cy + R*.55, 0, cx + R*.5, cy + R*.55, R*1.2);
+  sh.addColorStop(0, 'rgba(40,15,0,.25)'); sh.addColorStop(1, 'rgba(40,15,0,0)');
+  g.fillStyle = sh; g.fillRect(0, 0, size, size);
+  if (gold){
+    g.save(); g.globalCompositeOperation = 'lighter';
+    const band = g.createLinearGradient(cx - R, cy - R, cx + R, cy + R);
+    band.addColorStop(.3, 'rgba(255,255,255,0)'); band.addColorStop(.42, 'rgba(255,255,230,.5)'); band.addColorStop(.5, 'rgba(255,255,255,0)');
+    g.fillStyle = band; g.fillRect(0, 0, size, size); g.restore();
+  }
+  g.restore();
+  if (gold){ g.lineWidth = size*.012; g.strokeStyle = '#fff3b0'; shape(); g.stroke(); }
+  return c;
+}
+
+window.CookiePixels = {drawStrip, buildingIcon, artIcon, makeCookie, STRIP_H};
+})();
+
+</script>
 <script>
 (() => {
 'use strict';
@@ -196,9 +542,11 @@ function fresh(){
   return {cookies:0, baked:0, allTime:0, hand:0, clicks:0, goldClicks:0, own:Object.fromEntries(B.map(b => [b.key, 0])), ups:[], ach:[],
     name:siteName ? siteName.charAt(0) + siteName.slice(1).toLowerCase() : '', named:false, sesame:false, prestige:0, ascensions:0, start:Date.now(), saved:Date.now(), playMs:0};
 }
-const OPT_DEFAULTS = {format:'short', goldFreq:1, speed:1, clickMult:1, particles:true, numbers:true, news:true, sound:true, volume:.6, cookieStyle:'classic', milk:'plain', theme:'blue', offline:0, autosave:30};
+const OPT_DEFAULTS = {format:'short', goldEvery:240, goldLife:13, oddsFrenzy:45, oddsLucky:45, oddsClick:10, newsEvery:9, rain:1, speed:1, clickMult:1, numbers:true, news:true, sound:true, volume:.6, cookieStyle:'classic', milk:'plain', theme:'blue', offline:1, autosave:30, optVersion:2};
 let O = {...OPT_DEFAULTS};
 try { O = {...OPT_DEFAULTS, ...JSON.parse(localStorage.getItem(OPT) || '{}')}; } catch (e){}
+// older saves: turn on baking while away, and convert the old golden cookie setting
+if (O.optVersion !== 2){ if (O.goldFreq) O.goldEvery = Math.round(240/O.goldFreq); O.offline = 1; if (O.particles === false) O.rain = 0; O.optVersion = 2; }
 const siteName = (() => { try { const s = JSON.parse(localStorage.getItem('arcadeSession') || 'null'); return s && s.name ? String(s.name) : ''; } catch (e){ return ''; } })();
 
 /* ---------- buildings: base price and base cookies per second ---------- */
@@ -236,7 +584,7 @@ const TIER_WORDS = ['Better','Sturdier','Faster','Golden','Cosmic','Legendary','
 B.slice(1).forEach(b => TIER_AT.forEach((at, i) => U.push({id:b.key + i, name:`${TIER_WORDS[i]} ${b.name}s`, icon:b.icon, tier:ROMAN[i], cost:b.cost*TIER_MULT[i],
   desc:`${b.name}s are twice as efficient.`, unlock: s => s.own[b.key] >= at, b:b.key})));
 // grandma helpers: grandma x2, the building gets +1% per N grandmas
-B.slice(2).forEach((b, i) => U.push({id:'gm_' + b.key, name:`Grandma at the ${b.name}`, icon:'👵', tier:b.icon, cost:b.cost*50,
+B.slice(2).forEach((b, i) => U.push({id:'gm_' + b.key, name:`Grandma at the ${b.name}`, icon:'👵', tier:'G', cost:b.cost*50,
   desc:`Grandmas are twice as efficient. ${b.name}s gain +1% cookies per second for every ${i + 1} grandma${i ? 's' : ''}.`, unlock: s => s.own.grandma >= 1 && s.own[b.key] >= 15, gm:b.key, per:i + 1}));
 // click power: +1% of your cookies per second on every click
 const MOUSE_AT = [1000, 1e5, 1e7, 1e9, 1e11, 1e13, 1e15];
@@ -255,6 +603,7 @@ U.push({id:'gold0', name:'Lucky Streak', icon:'✨', tier:'I', cost:7.77e8, desc
 U.push({id:'gold1', name:'Golden Touch', icon:'✨', tier:'II', cost:7.77e10, desc:'Golden cookies appear twice as often again.', unlock: s => s.goldClicks >= 27, gold:'freq'});
 U.push({id:'gold2', name:'Long Luck', icon:'✨', tier:'III', cost:7.77e12, desc:'Golden cookie effects last twice as long.', unlock: s => s.goldClicks >= 77, gold:'dur'});
 const UBY = Object.fromEntries(U.map(u => [u.id, u]));
+U.forEach(u => u.img = u.id.startsWith('cur') ? 'b:cursor' : u.b ? 'b:' + u.b : u.gm ? 'b:' + u.gm : u.clickPct ? 'a:mouse' : u.flavor ? 'a:cookie' : u.kitten ? 'a:cat' : 'a:golden');
 
 /* ---------- achievements ---------- */
 const A = [];
@@ -267,12 +616,17 @@ CPSA.forEach(([n, name]) => A.push({id:'cps' + n, name, icon:'⚡', desc:`Bake $
 const HAND = [[1,'Clicktastic'],[1000,'Clickathlon'],[1e5,'Clickolympics'],[1e7,'Clickorama'],[1e9,'Clickasmic']];
 HAND.forEach(([n, name]) => A.push({id:'hand' + n, name, icon:'🖱️', desc:`Make ${fmt(n, true)} cookie${n > 1 ? 's' : ''} by clicking.`, test: s => s.hand >= n}));
 B.forEach(b => [[1,'First'],[50,'Lots of'],[100,'A hundred'],[200,'Two hundred']].forEach(([n, w]) =>
-  A.push({id:b.key + 'a' + n, name:`${w} ${b.name.toLowerCase()}${n > 1 ? 's' : ''}`, icon:b.icon, desc:`Own ${n} ${b.name.toLowerCase()}${n > 1 ? 's' : ''}.`, test: s => s.own[b.key] >= n})));
+  A.push({id:b.key + 'a' + n, name:`${w} ${b.name.toLowerCase()}${n > 1 ? 's' : ''}`, icon:b.icon, bkey:b.key, desc:`Own ${n} ${b.name.toLowerCase()}${n > 1 ? 's' : ''}.`, test: s => s.own[b.key] >= n})));
 [[1,'Golden cookie'],[7,'Lucky cookie'],[27,'A stroke of luck'],[77,'Fortune'],[777,'Leprechaun']].forEach(([n, name]) => A.push({id:'gc' + n, name, icon:'✨', desc:`Click ${n} golden cookie${n > 1 ? 's' : ''}.`, test: s => s.goldClicks >= n}));
 [[20,'Enhancer'],[50,'Augmenter'],[100,'Upgrader']].forEach(([n, name]) => A.push({id:'up' + n, name, icon:'⬆️', desc:`Buy ${n} upgrades.`, test: s => s.ups.length >= n}));
 A.push({id:'named', name:'God complex', icon:'🏷️', desc:'Give your bakery a name.', test: s => s.named});
 A.push({id:'sesame', name:'Something smells off', icon:'🔑', desc:'Find the secret word.', test: s => s.sesame});
 A.push({id:'asc', name:'Rebirth', icon:'👼', desc:'Ascend at least once.', test: s => s.ascensions >= 1});
+A.forEach(a => a.img = a.bkey ? 'b:' + a.bkey : a.id.startsWith('bk') ? 'a:cookie' : a.id.startsWith('cps') ? 'a:bolt' : a.id.startsWith('hand') ? 'a:mouse' : a.id.startsWith('gc') ? 'a:golden' : /^up\d/.test(a.id) ? 'a:arrow' : a.id === 'named' ? 'a:tag' : a.id === 'sesame' ? 'a:key' : 'a:angel');
+const CP = window.CookiePixels;
+const imgURL = k => k.startsWith('b:') ? CP.buildingIcon(k.slice(2)) : CP.artIcon(k.slice(2));
+const TIER_COLORS = ['#c9852e','#d8d8e0','#ffd84a','#4fe08a','#4cb8ff','#b06bff','#ff6bd6','#ff5470','#ffffff'];
+const tierColor = u => u.tier && ROMAN.indexOf(u.tier) >= 0 ? TIER_COLORS[ROMAN.indexOf(u.tier)] : u.flavor ? '#ffd84a' : u.kitten ? '#ff8aa8' : '#c9852e';
 const milkOf = s => s.ach.length*.04;
 
 /* ---------- save state ---------- */
@@ -287,7 +641,7 @@ function load(){
     S.name = String(S.name || '').replace(/'s$/, '');
     // offline production, if turned on in options
     const away = Math.max(0, (Date.now() - (S.saved || Date.now()))/1000);
-    if (O.offline > 0 && away > 5){ recalc(); const got = cps()*away*O.offline; earn(got); setTimeout(() => toast(`While you were away you baked ${fmt(got)} cookies.`), 600); }
+    if (O.offline > 0 && away > 5){ recalc(); const got = cps()*away*O.offline; earn(got); if (got > 0) setTimeout(() => welcomeBack(away, got), 400); }
   } catch (e){ S = fresh(); }
 }
 function save(){ S.saved = Date.now(); try { localStorage.setItem(SAVE, JSON.stringify(S)); return true; } catch (e){ return false; } }
@@ -366,25 +720,12 @@ function size(){
   cookieR = clamp(Math.min(W, H)*.3, 80, 190); cx = W/2; cy = H*.55;
 }
 addEventListener('resize', size);
-const STYLES = {
-  classic:{dough:['#e8b062','#c9852e','#9c5d1c'], chip:'#4a2611'},
-  white:{dough:['#e8b062','#c9852e','#9c5d1c'], chip:'#fff3d8'},
-  double:{dough:['#7a4a2a','#5a311a','#3a1d0d'], chip:'#f5e6c8'},
-  oat:{dough:['#e6c38a','#c7a063','#9c7a44'], chip:'#6b3d1c'}
-};
 const MILK = {plain:'rgba(245,245,255,.85)', choc:'rgba(150,95,60,.88)', straw:'rgba(255,170,200,.88)', mint:'rgba(170,240,210,.88)', none:'rgba(0,0,0,0)'};
-const chips = Array.from({length:22}, (_, i) => { const a = i*2.399, r = Math.sqrt((i + .5)/22)*.82; return {x:Math.cos(a)*r, y:Math.sin(a)*r, s:.06 + (i*37 % 7)/120}; });
-function drawCookie(x, y, r, rot){
-  const st = STYLES[O.cookieStyle] || STYLES.classic;
-  g.save(); g.translate(x, y); g.rotate(rot || 0);
-  const grd = g.createRadialGradient(-r*.3, -r*.3, r*.1, 0, 0, r);
-  grd.addColorStop(0, st.dough[0]); grd.addColorStop(.7, st.dough[1]); grd.addColorStop(1, st.dough[2]);
-  g.fillStyle = grd; g.beginPath();
-  for (let i = 0; i <= 40; i++){ const a = i/40*Math.PI*2, rr = r*(1 + Math.sin(a*7)*.012 + Math.cos(a*5)*.01); g.lineTo(Math.cos(a)*rr, Math.sin(a)*rr); }
-  g.fill();
-  g.fillStyle = st.chip;
-  for (const c of chips){ g.beginPath(); g.ellipse(c.x*r, c.y*r, c.s*r, c.s*r*.8, c.x*3, 0, Math.PI*2); g.fill(); }
-  g.restore();
+const cookieImgs = {};
+function cookieImg(style, size){ const k = style + size; return cookieImgs[k] || (cookieImgs[k] = CP.makeCookie(size, style)); }
+function drawCookie(x, y, r, rot, small){
+  const img = cookieImg(O.cookieStyle, small ? 96 : 640), d = 2*r/.92;
+  g.save(); g.translate(x, y); g.rotate(rot || 0); g.drawImage(img, -d/2, -d/2, d, d); g.restore();
 }
 const falling = [];
 const floats = [];
@@ -392,13 +733,13 @@ function frameDraw(dt){
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
   g.clearRect(0, 0, W, H);
   // background cookie rain, more with higher production
-  if (O.particles){
-    const rate = clamp(Math.log10(cps() + 1)*1.5, 0, 12);
+  if (O.rain > 0){
+    const rate = clamp(Math.log10(cps() + 1)*1.5, 0, 12)*O.rain;
     if (Math.random() < rate*dt) falling.push({x:Math.random()*W, y:-20, v:60 + Math.random()*80, r:8 + Math.random()*10, rot:Math.random()*6, vr:(Math.random() - .5)*2});
   }
   for (let i = falling.length - 1; i >= 0; i--){
     const f = falling[i]; f.y += f.v*dt; f.rot += f.vr*dt;
-    g.globalAlpha = .55; drawCookie(f.x, f.y, f.r, f.rot); g.globalAlpha = 1;
+    g.globalAlpha = .6; drawCookie(f.x, f.y, f.r, f.rot, true); g.globalAlpha = 1;
     if (f.y > H + 30) falling.splice(i, 1);
   }
   // milk rises with achievements
@@ -416,8 +757,7 @@ function frameDraw(dt){
   const glow = g.createRadialGradient(cx, cy, r*.6, cx, cy, r*1.6);
   glow.addColorStop(0, 'rgba(255,230,160,.35)'); glow.addColorStop(1, 'rgba(255,230,160,0)');
   g.fillStyle = glow; g.beginPath(); g.arc(cx, cy, r*1.6, 0, Math.PI*2); g.fill();
-  g.save(); g.shadowColor = 'rgba(0,0,0,.45)'; g.shadowBlur = 24; g.shadowOffsetY = 10;
-  drawCookie(cx, cy, r, 0); g.restore();
+  drawCookie(cx, cy, r, 0);
   // cursors circling the cookie
   const nc = Math.min(S.own.cursor, 50);
   g.font = '20px serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
@@ -444,22 +784,24 @@ cv.addEventListener('pointerdown', e => {
   earn(p); S.hand += p; S.clicks++;
   squish = 1; sfx('click');
   if (O.numbers) floats.push({x:x + (Math.random() - .5)*20, y, t:0, s:'+' + fmt(p)});
-  if (O.particles) falling.push({x, y, v:-120, r:7, rot:0, vr:3});
+  if (O.rain > 0) falling.push({x, y, v:-120, r:7, rot:0, vr:3});
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
 
 /* ---------- golden cookies ---------- */
 let goldTimer = 0, goldEl = null;
 function goldDelay(){
-  let min = 120, max = 360;   // 2–6 minutes at "normal"
-  let f = O.goldFreq; if (has('gold0')) f *= 2; if (has('gold1')) f *= 2;
-  return (min + Math.random()*(max - min))/f;
+  let f = 1; if (has('gold0')) f *= 2; if (has('gold1')) f *= 2;
+  return O.goldEvery*(.5 + Math.random())/f;
 }
+let goldURL = null;
 function spawnGolden(){
   if (goldEl) goldEl.remove();
   const el = document.createElement('button'); el.type = 'button'; el.className = 'golden'; el.setAttribute('aria-label', 'Golden cookie');
+  if (!goldURL) goldURL = CP.makeCookie(172, 'golden').toDataURL();
+  el.style.backgroundImage = `url(${goldURL})`;
   el.style.left = (20 + Math.random()*(innerWidth - 120)) + 'px'; el.style.top = (70 + Math.random()*(innerHeight - 170)) + 'px';
-  const life = 13*(has('gold0') ? 2 : 1);
+  const life = O.goldLife*(has('gold0') ? 2 : 1);
   el.dataset.until = performance.now() + life*1000;
   el.addEventListener('click', ev => { clickGolden(ev.clientX, ev.clientY); });
   document.body.appendChild(el); goldEl = el; sfx('gold');
@@ -473,10 +815,10 @@ function addBuff(kind, mult, secs, label){
 function clickGolden(x, y){
   if (!goldEl) return;
   goldEl.remove(); goldEl = null; S.goldClicks++;
-  const r = Math.random();
+  const tot = Math.max(1, O.oddsFrenzy + O.oddsLucky + O.oddsClick), r = Math.random()*tot;
   let msg;
-  if (r < .45){ addBuff('cps', 7, 77, 'Frenzy'); msg = 'Frenzy! Production ×7 for 77 seconds'; }
-  else if (r < .9){ const got = Math.min(S.cookies*.15, cps()*900) + 13; earn(got); msg = 'Lucky! +' + fmt(got) + ' cookies'; }
+  if (r < O.oddsFrenzy){ addBuff('cps', 7, 77, 'Frenzy'); msg = 'Frenzy! Production ×7 for 77 seconds'; }
+  else if (r < O.oddsFrenzy + O.oddsLucky){ const got = Math.min(S.cookies*.15, cps()*900) + 13; earn(got); msg = 'Lucky! +' + fmt(got) + ' cookies'; }
   else { addBuff('click', 777, 13, 'Click frenzy'); msg = 'Click frenzy! Clicking power ×777 for 13 seconds'; }
   pop(msg, x, y, '#ffd25a'); sfx('gold'); recalc(); checkAch();
 }
@@ -515,7 +857,7 @@ function renderStore(force){
     if (!avail.length){ const p = document.createElement('span'); p.style.color = 'var(--dim)'; p.style.fontSize = '12px'; p.textContent = S.ups.length >= U.length ? 'Every upgrade bought!' : 'Keep baking to unlock upgrades.'; box.appendChild(p); }
     for (const u of avail){
       const b = document.createElement('button'); b.type = 'button'; b.className = 'up'; b.dataset.id = u.id;
-      b.innerHTML = `${u.icon}<small>${u.tier}</small>`; b.setAttribute('aria-label', `${u.name}, costs ${fmt(u.cost)}`);
+      b.innerHTML = `<img src="${imgURL(u.img)}" alt=""><small>${u.tier}</small>`; b.style.setProperty('--tier', tierColor(u)); b.setAttribute('aria-label', `${u.name}, costs ${fmt(u.cost)}`);
       b.addEventListener('click', () => buyUpgrade(u));
       b.addEventListener('mouseenter', e => showTip(upTip(u), e)); b.addEventListener('mousemove', moveTip); b.addEventListener('mouseleave', hideTip);
       box.appendChild(b);
@@ -529,7 +871,7 @@ function renderStore(force){
     let el = bldEls[b.key];
     if (!el){
       el = document.createElement('button'); el.type = 'button'; el.className = 'bld';
-      el.innerHTML = `<span class="ic">${b.icon}</span><span><span class="nm"></span><br><span class="pr num"></span></span><span class="own num"></span>`;
+      el.innerHTML = `<img class="ic" src="${imgURL('b:' + b.key)}" alt=""><span><span class="nm"></span><br><span class="pr num"></span></span><span class="own num"></span>`;
       el.addEventListener('click', () => buyBuilding(b));
       el.addEventListener('mouseenter', e => showTip(bldTip(b), e)); el.addEventListener('mousemove', moveTip); el.addEventListener('mouseleave', hideTip);
       list.appendChild(el); bldEls[b.key] = el;
@@ -557,18 +899,30 @@ const tip = $('tip');
 function showTip(html, e){ tip.innerHTML = typeof html === 'function' ? html() : html; tip.hidden = false; moveTip(e); }
 function moveTip(e){ const w = tip.offsetWidth, h = tip.offsetHeight; tip.style.left = clamp(e.clientX - w - 16, 8, innerWidth - w - 8) + 'px'; tip.style.top = clamp(e.clientY - 10, 8, innerHeight - h - 8) + 'px'; }
 function hideTip(){ tip.hidden = true; }
+const strips = {};
 function renderMiddle(){
-  const box = $('middle'); box.textContent = '';
+  const box = $('middle');
   const owned = B.filter(b => S.own[b.key] > 0);
-  if (!owned.length){ const d = document.createElement('div'); d.className = 'empty'; d.innerHTML = 'Your bakery is empty.<br>Click the big cookie, then buy a Cursor or a Grandma from the store.'; box.appendChild(d); return; }
-  for (const b of owned){
-    const n = S.own[b.key];
-    const s = document.createElement('div'); s.className = 'strip';
-    const shown = Math.min(n, 40);
-    s.innerHTML = `<h3><b>${b.name}</b>${fmt(bldCps(b.key)*n)} per second</h3><div class="units">${('<span>' + b.icon + '</span>').repeat(shown)}</div>` + (n > shown ? `<div class="more">+${n - shown} more</div>` : '');
-    box.appendChild(s);
+  const sig = owned.map(b => b.key).join(',');
+  if (box.dataset.sig !== sig){
+    box.dataset.sig = sig; box.textContent = '';
+    for (const k in strips) delete strips[k];
+    if (!owned.length){ const d = document.createElement('div'); d.className = 'empty'; d.innerHTML = 'Your bakery is empty.<br>Click the big cookie, then buy a Cursor or a Grandma from the store.'; box.appendChild(d); }
+    for (const b of owned){
+      const s = document.createElement('div'); s.className = 'strip';
+      s.innerHTML = `<canvas></canvas><h3><b>${b.name}</b><span class="num"></span></h3><span class="count num"></span>`;
+      box.appendChild(s);
+      strips[b.key] = {el:s, cv:s.querySelector('canvas'), rate:s.querySelector('h3 span'), count:s.querySelector('.count')};
+    }
+    sizeStrips();
   }
+  for (const b of owned){ const st = strips[b.key]; st.rate.textContent = fmt(bldCps(b.key)*S.own[b.key]) + ' per second'; st.count.textContent = '×' + S.own[b.key]; }
 }
+function sizeStrips(){
+  for (const k in strips){ const cv = strips[k].cv, w = Math.max(60, Math.floor(cv.clientWidth/3)); if (cv.width !== w){ cv.width = w; cv.height = CP.STRIP_H; } }
+}
+function drawStrips(){ for (const k in strips){ const st = strips[k]; if (st.cv.width) CP.drawStrip(st.cv, k, S.own[k], t); } }
+addEventListener('resize', sizeStrips);
 document.querySelectorAll('.modes [data-n]').forEach(btn => btn.addEventListener('click', () => {
   buyN = +btn.dataset.n; document.querySelectorAll('.modes [data-n]').forEach(x => x.setAttribute('aria-pressed', String(x === btn))); renderStore();
 }));
@@ -587,17 +941,31 @@ $('bakery').addEventListener('click', () => {
   if (clean.toLowerCase().replace(/[^a-z]/g, '').includes('opensesame')) openSesame();
   checkAch(); save();
 });
-function openSesame(){
-  // the secret word: max everything and open the dev panel
-  S.sesame = true;
-  for (const b of B) S.own[b.key] = Math.max(S.own[b.key], 600);
-  for (const u of U) if (!has(u.id)) S.ups.push(u.id);
-  for (const a of A) if (!S.ach.includes(a.id)) S.ach.push(a.id);
-  S.cookies = Math.max(S.cookies, 1e45); S.baked = Math.max(S.baked, 1e45); S.allTime = Math.max(S.allTime, 1e45);
-  S.hand = Math.max(S.hand, 1e15); S.goldClicks = Math.max(S.goldClicks, 777);
-  recalc(); renderStore(true); renderMiddle();
-  $('dev').hidden = false;
-  toast('Open sesame! Everything is maxed out.');
+function openSesame(){ setSesame(true); }
+function setSesame(on){
+  if (on === !!S.sesame) return;
+  if (on){
+    // remember the real bakery so the switch can put it back
+    const snap = {...S}; delete snap.preSesame;
+    S.preSesame = JSON.stringify(snap);
+    S.sesame = true;
+    for (const b of B) S.own[b.key] = Math.max(S.own[b.key], 600);
+    for (const u of U) if (!has(u.id)) S.ups.push(u.id);
+    for (const a of A) if (!S.ach.includes(a.id)) S.ach.push(a.id);
+    S.cookies = Math.max(S.cookies, 1e45); S.baked = Math.max(S.baked, 1e45); S.allTime = Math.max(S.allTime, 1e45);
+    S.hand = Math.max(S.hand, 1e15); S.goldClicks = Math.max(S.goldClicks, 777);
+    $('dev').hidden = false;
+    toast('Open sesame! Everything is maxed out.');
+  } else {
+    let prev = null; try { prev = JSON.parse(S.preSesame || 'null'); } catch (e){}
+    const keep = {playMs:S.playMs, name:S.name, named:S.named};
+    const f = fresh();
+    S = prev ? {...f, ...prev, own:{...f.own, ...(prev.own || {})}, ...keep, sesame:false, preSesame:null} : {...S, sesame:false, preSesame:null};
+    $('dev').hidden = true;
+    toast('Open sesame is off. Your real bakery is back.');
+  }
+  buffs.length = 0; recalc(); renderStore(true); renderMiddle(); renderName(); save();
+  const sw = $('o-sesame'); if (sw) sw.checked = !!S.sesame;
 }
 document.querySelectorAll('[data-dev]').forEach(b => b.addEventListener('click', () => {
   const d = b.dataset.dev;
@@ -606,6 +974,7 @@ document.querySelectorAll('[data-dev]').forEach(b => b.addEventListener('click',
   if (d === 'frenzy') addBuff('cps', 7, 77, 'Frenzy');
   if (d === 'click') addBuff('click', 777, 13, 'Click frenzy');
   if (d === 'close') $('dev').hidden = true;
+  if (d === 'off') setSesame(false);
   recalc();
 }));
 
@@ -648,8 +1017,8 @@ function renderStats(){
     row('Cookie clicks', fmt(S.clicks, true)) + row('Handmade cookies', fmt(S.hand)) + row('Golden cookies clicked', fmt(S.goldClicks, true)) +
     row('Time played', `${Math.floor(secs/3600)}h ${Math.floor(secs/60) % 60}m`) + row('Prestige level', `${fmt(S.prestige, true)} (+${fmt(S.prestige, true)}% production)`) +
     row('Milk', Math.round(milkOf(S)*100) + '%') + `</div>` +
-    `<h3>Upgrades bought (${S.ups.length}/${U.length})</h3><div class="achs">${U.filter(u => has(u.id)).map(u => `<span class="ach" title="${u.name}: ${u.desc}">${u.icon}</span>`).join('') || '<span style="color:var(--dim)">None yet.</span>'}</div>` +
-    `<h3>Achievements (${S.ach.length}/${A.length})</h3><div class="achs">${A.map(a => `<span class="ach${S.ach.includes(a.id) ? '' : ' no'}" title="${S.ach.includes(a.id) ? a.name + ': ' : '???: '}${a.desc}">${a.icon}</span>`).join('')}</div>`;
+    `<h3>Upgrades bought (${S.ups.length}/${U.length})</h3><div class="achs">${U.filter(u => has(u.id)).map(u => `<span class="ach" title="${u.name}: ${u.desc}"><img src="${imgURL(u.img)}" alt=""></span>`).join('') || '<span style="color:var(--dim)">None yet.</span>'}</div>` +
+    `<h3>Achievements (${S.ach.length}/${A.length})</h3><div class="achs">${A.map(a => `<span class="ach${S.ach.includes(a.id) ? '' : ' no'}" title="${S.ach.includes(a.id) ? a.name + ': ' : '???: '}${a.desc}"><img src="${imgURL(a.img)}" alt=""></span>`).join('')}</div>`;
   const ar = $('ascend-row'); ar.innerHTML = '';
   const b = document.createElement('button'); b.type = 'button'; b.className = 'btn gold';
   b.textContent = pt > 0 ? `Ascend (+${fmt(pt, true)} prestige)` : 'Ascend (bake 1 trillion cookies to earn prestige)';
@@ -663,24 +1032,34 @@ function renderStats(){
 }
 
 /* ---------- options ---------- */
+const STEPS_GOLD = [10, 20, 30, 45, 60, 90, 120, 180, 240, 300, 420, 600, 900];
+const secs = v => v < 60 ? v + ' s' : (v % 60 ? (v/60).toFixed(1) : v/60) + ' min';
 const OSCHEMA = [
+  {h:'Golden cookies & events'},
+  {id:'goldEvery', label:'A golden cookie shows up about every', type:'steps', steps:STEPS_GOLD, fmt:secs},
+  {id:'goldLife', label:'Golden cookies stay on screen for', type:'range', min:5, max:60, step:1, fmt:v => v + ' s'},
+  {id:'oddsFrenzy', label:'Chance of Frenzy (×7 production)', type:'range', min:0, max:100, step:5, fmt:v => v + ''},
+  {id:'oddsLucky', label:'Chance of Lucky (instant cookies)', type:'range', min:0, max:100, step:5, fmt:v => v + ''},
+  {id:'oddsClick', label:'Chance of Click frenzy (×777 clicks)', type:'range', min:0, max:100, step:5, fmt:v => v + ''},
+  {id:'newsEvery', label:'News changes every', type:'range', min:3, max:30, step:1, fmt:v => v + ' s'},
+  {id:'rain', label:'Falling cookies', type:'range', min:0, max:3, step:.25, fmt:v => v ? '×' + v : 'Off'},
   {h:'Gameplay'},
-  {id:'goldFreq', label:'Golden cookies', type:'select', num:true, options:[[.5,'Rare'],[1,'Normal'],[2,'Often'],[5,'Very often']]},
   {id:'speed', label:'Production speed', type:'select', num:true, options:[[1,'Normal'],[2,'×2'],[5,'×5'],[10,'×10'],[100,'×100']]},
   {id:'clickMult', label:'Click power', type:'select', num:true, options:[[1,'Normal'],[2,'×2'],[10,'×10'],[100,'×100']]},
-  {id:'offline', label:'Baking while you are away', type:'select', num:true, options:[[0,'Off'],[.25,'25%'],[.5,'50%'],[1,'100%']]},
+  {id:'offline', label:'Baking while you are away or the tab is closed', type:'select', num:true, options:[[0,'Off'],[.25,'25%'],[.5,'50%'],[1,'100%']]},
   {h:'Look'},
   {id:'format', label:'Numbers', type:'select', options:[['short','Short (1.234 million)'],['full','Full (1,234,567)'],['sci','Scientific (1.234e6)']]},
   {id:'cookieStyle', label:'Big cookie', type:'select', options:[['classic','Chocolate chip'],['white','White chocolate'],['double','Double chocolate'],['oat','Oatmeal raisin']]},
   {id:'milk', label:'Milk', type:'select', options:[['plain','Plain'],['choc','Chocolate'],['straw','Strawberry'],['mint','Mint'],['none','No milk']]},
   {id:'theme', label:'Background', type:'select', options:[['blue','Blue'],['night','Night'],['rose','Rose'],['mint','Mint']]},
-  {id:'particles', label:'Falling cookies', type:'toggle'},
   {id:'numbers', label:'Numbers when you click', type:'toggle'},
   {id:'news', label:'News ticker', type:'toggle'},
   {h:'Sound & saving'},
   {id:'sound', label:'Sound', type:'toggle'},
   {id:'volume', label:'Volume', type:'range', min:0, max:1, step:.05, fmt:v => Math.round(v*100) + '%'},
-  {id:'autosave', label:'Autosave', type:'select', num:true, options:[[10,'Every 10 seconds'],[30,'Every 30 seconds'],[60,'Every minute'],[0,'Off']]}
+  {id:'autosave', label:'Autosave', type:'select', num:true, options:[[10,'Every 10 seconds'],[30,'Every 30 seconds'],[60,'Every minute'],[0,'Off']]},
+  {h:'Secret'},
+  {id:'sesame', label:'Open sesame: max out everything (turn off to get your real bakery back)', type:'sesame'}
 ];
 function renderOpts(){
   const el = $('opts-body'); el.textContent = '';
@@ -693,9 +1072,15 @@ function renderOpts(){
       const s = document.createElement('select'); s.id = 'o-' + it.id;
       for (const [v, l] of it.options){ const o = document.createElement('option'); o.value = v; o.textContent = l; s.appendChild(o); }
       s.value = O[it.id]; s.addEventListener('change', () => { O[it.id] = it.num ? +s.value : s.value; applyOpts(); }); ctl.appendChild(s);
-    } else if (it.type === 'toggle'){
-      const c = document.createElement('input'); c.type = 'checkbox'; c.className = 'switch'; c.id = 'o-' + it.id; c.setAttribute('role', 'switch'); c.checked = !!O[it.id];
-      c.addEventListener('change', () => { O[it.id] = c.checked; applyOpts(); }); ctl.appendChild(c);
+    } else if (it.type === 'toggle' || it.type === 'sesame'){
+      const c = document.createElement('input'); c.type = 'checkbox'; c.className = 'switch'; c.id = 'o-' + it.id; c.setAttribute('role', 'switch');
+      c.checked = it.type === 'sesame' ? !!S.sesame : !!O[it.id];
+      c.addEventListener('change', () => { if (it.type === 'sesame') setSesame(c.checked); else { O[it.id] = c.checked; applyOpts(); } }); ctl.appendChild(c);
+    } else if (it.type === 'steps'){
+      const r = document.createElement('input'); r.type = 'range'; r.id = 'o-' + it.id; r.min = 0; r.max = it.steps.length - 1; r.step = 1;
+      let idx = it.steps.indexOf(O[it.id]); if (idx < 0) idx = it.steps.reduce((bi, v, i) => Math.abs(v - O[it.id]) < Math.abs(it.steps[bi] - O[it.id]) ? i : bi, 0); r.value = idx;
+      const out = document.createElement('output'); out.textContent = it.fmt(it.steps[idx]);
+      r.addEventListener('input', () => { O[it.id] = it.steps[+r.value]; out.textContent = it.fmt(O[it.id]); applyOpts(); if (it.id === 'goldEvery') goldTimer = Math.min(goldTimer, goldDelay()); }); ctl.append(r, out);
     } else {
       const r = document.createElement('input'); r.type = 'range'; r.id = 'o-' + it.id; r.min = it.min; r.max = it.max; r.step = it.step; r.value = O[it.id];
       const out = document.createElement('output'); out.textContent = it.fmt(+O[it.id]);
@@ -740,17 +1125,23 @@ function sfx(kind){
 }
 
 /* ---------- main loop ---------- */
-let t = 0, last = performance.now(), uiT = 0, saveT = 0, achT = 0, midT = 0;
+function dur(sec){ sec = Math.floor(sec); const d = Math.floor(sec/86400), h = Math.floor(sec/3600) % 24, m = Math.floor(sec/60) % 60; return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : m ? `${m}m ${sec % 60}s` : sec + 's'; }
+function welcomeBack(sec, got){ $('away-text').textContent = `You were gone for ${dur(sec)}. Your bakery kept going and baked ${fmt(got)} cookies.`; $('away').hidden = false; clearTimeout(welcomeBack.t); welcomeBack.t = setTimeout(() => $('away').hidden = true, 9000); }
+$('away-ok').addEventListener('click', () => $('away').hidden = true);
+let t = 0, last = performance.now(), uiT = 0, saveT = 0, achT = 0, midT = 0, stripT = 0;
 function loop(now){
   requestAnimationFrame(loop);
-  const dt = Math.min(1, (now - last)/1000); last = now; t += dt;
+  const gap = (now - last)/1000; last = now;
+  // the browser pauses hidden tabs; when you come back, add what the bakery made meanwhile
+  if (gap > 2){ const got = cps()*(gap - 1)*O.offline; if (got > 0){ earn(got); if (gap > 30) welcomeBack(gap, got); } }
+  const dt = Math.min(1, gap); t += dt;
   S.playMs += dt*1000;
   earn(cps()*dt);
   // buffs tick down
   let changed = false;
   for (let i = buffs.length - 1; i >= 0; i--){ buffs[i].t -= dt; if (buffs[i].t <= 0){ buffs.splice(i, 1); changed = true; } }
   // golden cookies
-  if (goldEl){ if (now > +goldEl.dataset.until){ goldEl.remove(); goldEl = null; } }
+  if (goldEl){ if (now > +goldEl.dataset.until){ goldEl.remove(); goldEl = null; } else if (+goldEl.dataset.until - now < 1500) goldEl.classList.add('fading'); }
   else { goldTimer -= dt; if (goldTimer <= 0){ spawnGolden(); goldTimer = goldDelay(); } }
   frameDraw(dt);
   uiT += dt;
@@ -763,16 +1154,17 @@ function loop(now){
   }
   if (changed) recalc();
   achT += dt; if (achT > 1){ achT = 0; checkAch(); }
-  midT += dt; if (midT > 3){ midT = 0; renderMiddle(); }
-  newsT += dt; if (newsT > 9){ newsT = 0; nextNews(); }
+  midT += dt; if (midT > 1){ midT = 0; renderMiddle(); }
+  stripT += dt; if (stripT > 1/12){ stripT = 0; drawStrips(); }
+  newsT += dt; if (newsT > O.newsEvery){ newsT = 0; nextNews(); }
   saveT += dt; if (O.autosave > 0 && saveT > O.autosave){ saveT = 0; save(); }
 }
 addEventListener('beforeunload', save);
 addEventListener('pagehide', save);
+document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
 
 /* ---------- boot ---------- */
 load();
-if (S.name.toLowerCase().replace(/[^a-z]/g, '').includes('opensesame') && !S.sesame) openSesame();
 if (S.sesame) $('dev').hidden = false;
 document.body.className = O.theme === 'blue' ? '' : 'theme-' + O.theme;
 recalc(); renderName(); renderStore(true); renderMiddle(); nextNews(); size();

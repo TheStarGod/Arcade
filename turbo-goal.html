@@ -220,7 +220,7 @@ const coarse = matchMedia('(pointer:coarse)').matches;
 const siteName = (() => { try { const s = JSON.parse(localStorage.getItem('arcadeSession') || 'null'); return s && s.name ? String(s.name).toUpperCase() : ''; } catch (e){ return ''; } })();
 
 /* ---------- arena size (meters) ---------- */
-const W = 41, L = 60, CEIL = 30, GW = 18, GH = 7.2, GD = 9, CUT = 12;
+const W = 56, L = 80, CEIL = 36, GW = 26, GH = 10, GD = 11, CUT = 16;
 const STEP = 1/120;
 
 /* ---------- settings ---------- */
@@ -257,7 +257,7 @@ const CARS = {
 const PAINTS = ['#2f8cff','#18c3a0','#9b5cff','#e8eefc','#1d2233','#ff4f8b','#ffd84a','#4fe08a'];
 const TRIMS = ['#e8eefc','#1d2233','#ffd84a','#ff4f4f','#18c3a0','#9aa3c9'];
 const DIFF = {
-  rookie:  {label:'Rookie',   react:.35, speed:.82, boost:.25, dodge:.15, aerial:0,   aim:.6},
+  rookie:  {label:'Rookie',   react:.35, speed:.82, boost:.25, dodge:.15, aerial:.08, aim:.6},
   pro:     {label:'Pro',      react:.18, speed:.95, boost:.7,  dodge:.55, aerial:.25, aim:.85},
   allstar: {label:'All-Star', react:.08, speed:1,   boost:1,   dodge:.9,  aerial:.75, aim:1}
 };
@@ -269,7 +269,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0f2a);
-scene.fog = new THREE.Fog(0x0a0f2a, 120, 260);
+scene.fog = new THREE.Fog(0x0a0f2a, 170, 360);
 const camera = new THREE.PerspectiveCamera(80, 1, .1, 800);
 function resize(){
   const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight;
@@ -278,25 +278,39 @@ function resize(){
 addEventListener('resize', resize);
 scene.add(new THREE.HemisphereLight(0xcfe0ff, 0x223322, .65));
 const sun = new THREE.DirectionalLight(0xffffff, .75);
-sun.position.set(30, 80, 20); sun.castShadow = true;
+sun.position.set(36, 100, 24); sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
-Object.assign(sun.shadow.camera, {left:-60, right:60, top:75, bottom:-75, near:10, far:200});
+Object.assign(sun.shadow.camera, {left:-75, right:75, top:100, bottom:-100, near:10, far:240});
 scene.add(sun);
 
+{
+  const env = new THREE.Scene();
+  const skyTex = (() => { const c = document.createElement('canvas'); c.width = 256; c.height = 128; const g = c.getContext('2d');
+    const gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, '#3a4c8c'); gr.addColorStop(.48, '#9fb6ff'); gr.addColorStop(.52, '#2a3350'); gr.addColorStop(1, '#141a2c');
+    g.fillStyle = gr; g.fillRect(0, 0, 256, 128);
+    g.fillStyle = '#fff'; for (let i = 0; i < 8; i++) g.fillRect(i*32 + 8, 18, 16, 7);
+    return new THREE.CanvasTexture(c); })();
+  env.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.MeshBasicMaterial({map:skyTex, side:THREE.BackSide})));
+  const pm = new THREE.PMREMGenerator(renderer);
+  scene.environment = pm.fromScene(env, .02).texture;
+  pm.dispose();
+}
 function canvasTex(w, h, draw){
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   draw(c.getContext('2d'), w, h);
   const t = new THREE.CanvasTexture(c); t.anisotropy = 8; return t;
 }
 /* field: mowing stripes and white lines, drawn 10 px per meter */
-const fieldTex = canvasTex(W*2*10, L*2*10, (g, w, h) => {
-  for (let i = 0; i < 12; i++){ g.fillStyle = i % 2 ? '#2f7d3b' : '#358a42'; g.fillRect(0, i*h/12, w, h/12 + 1); }
+const fieldTex = canvasTex(W*2*8, L*2*8, (g, w, h) => {
+  const m = 8; // px per meter
+  for (let i = 0; i < 16; i++){ g.fillStyle = i % 2 ? '#2f7d3b' : '#358a42'; g.fillRect(0, i*h/16, w, h/16 + 1); }
   g.strokeStyle = 'rgba(255,255,255,.8)'; g.lineWidth = 5;
   g.strokeRect(4, 4, w - 8, h - 8);
   g.beginPath(); g.moveTo(0, h/2); g.lineTo(w, h/2); g.stroke();
-  g.beginPath(); g.arc(w/2, h/2, 90, 0, Math.PI*2); g.stroke();
+  g.beginPath(); g.arc(w/2, h/2, 12*m, 0, Math.PI*2); g.stroke();
   g.fillStyle = '#fff'; g.beginPath(); g.arc(w/2, h/2, 8, 0, Math.PI*2); g.fill();
-  for (const y of [0, h]){ const dir = y ? -1 : 1; g.strokeRect(w/2 - 150, y === 0 ? 0 : h - 140, 300, 140); g.beginPath(); g.arc(w/2, y + dir*140, 60, dir > 0 ? 0 : Math.PI, dir > 0 ? Math.PI : Math.PI*2); g.stroke(); }
+  const bw = (GW + 14)*m, bd = 18*m;
+  for (const y of [0, h]){ const dir = y ? -1 : 1; g.strokeRect(w/2 - bw/2, y === 0 ? 0 : h - bd, bw, bd); g.beginPath(); g.arc(w/2, y + dir*bd, 8*m, dir > 0 ? 0 : Math.PI, dir > 0 ? Math.PI : Math.PI*2); g.stroke(); }
   g.fillStyle = 'rgba(47,140,255,.18)'; g.fillRect(0, h - 40, w, 40);
   g.fillStyle = 'rgba(255,138,31,.18)'; g.fillRect(0, 0, w, 40);
 });
@@ -310,16 +324,23 @@ for (const sx of [-1, 1]) for (const sz of [-1, 1]){
   scene.add(new THREE.Mesh(geo, cornerMat));
 }
 /* walls: glassy panels with a glowing rim in each team's color near their goal */
-function wallPanel(w, h, x, y, z, ry, color){
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshLambertMaterial({color, transparent:true, opacity:.22, side:THREE.DoubleSide, depthWrite:false}));
-  m.position.set(x, y, z); m.rotation.y = ry; scene.add(m);
-  const rim = new THREE.Mesh(new THREE.BoxGeometry(w, .25, .25), new THREE.MeshBasicMaterial({color}));
-  rim.position.set(x, y - h/2 + .12, z); rim.rotation.y = ry; scene.add(rim);
+const gridImg = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+  g.fillStyle = 'rgba(255,255,255,.10)'; g.fillRect(0, 0, 128, 128);
+  g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 3; g.strokeRect(1.5, 1.5, 125, 125);
+  g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(64, 0); g.lineTo(64, 128); g.moveTo(0, 64); g.lineTo(128, 64); g.stroke(); return c; })();
+function wallPanel(w, h, x, y, z, ry, color, rx){
+  const tex = new THREE.CanvasTexture(gridImg); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(Math.max(1, Math.round(w/6)), Math.max(1, Math.round(h/6)));
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({color, map:tex, transparent:true, opacity:.32, side:THREE.DoubleSide, depthWrite:false}));
+  m.position.set(x, y, z); m.rotation.order = 'YXZ'; m.rotation.y = ry; if (rx) m.rotation.x = rx; scene.add(m);
+  if (rx) return;
+  const rim = new THREE.Mesh(new THREE.BoxGeometry(w, .3, .3), new THREE.MeshBasicMaterial({color}));
+  rim.position.set(x, y - h/2 + .15, z); rim.rotation.y = ry; scene.add(rim);
   const top = rim.clone(); top.position.y = y + h/2; scene.add(top);
 }
-const WALL_H = 14;
+const WALL_H = CEIL;
 wallPanel(L*2 - CUT*2, WALL_H, -W, WALL_H/2, 0, Math.PI/2, 0x7da2ff);
 wallPanel(L*2 - CUT*2, WALL_H, W, WALL_H/2, 0, Math.PI/2, 0x7da2ff);
+wallPanel(W*2, L*2, 0, CEIL, 0, 0, 0x5a6fb0, Math.PI/2);  // ceiling
 for (const sz of [-1, 1]){
   const col = sz > 0 ? 0x2f8cff : 0xff8a1f;
   const side = (W - CUT - GW/2);
@@ -332,8 +353,8 @@ for (const sz of [-1, 1]){
   }
   // goal: posts, crossbar, net
   const gm = new THREE.MeshLambertMaterial({color:col, emissive:col, emissiveIntensity:.35});
-  for (const sx of [-1, 1]){ const p = new THREE.Mesh(new THREE.BoxGeometry(.5, GH, .5), gm); p.position.set(sx*GW/2, GH/2, L*sz); scene.add(p); }
-  const bar = new THREE.Mesh(new THREE.BoxGeometry(GW + .5, .5, .5), gm); bar.position.set(0, GH, L*sz); scene.add(bar);
+  for (const sx of [-1, 1]){ const p = new THREE.Mesh(new THREE.BoxGeometry(.6, GH, .6), gm); p.position.set(sx*GW/2, GH/2, L*sz); scene.add(p); }
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(GW + .6, .6, .6), gm); bar.position.set(0, GH, L*sz); scene.add(bar);
   const netTex = canvasTex(256, 128, (g, w, h) => { g.strokeStyle = 'rgba(255,255,255,.75)'; g.lineWidth = 2; for (let x = 0; x <= w; x += 16){ g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); } for (let y = 0; y <= h; y += 16){ g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); } });
   const netMat = new THREE.MeshBasicMaterial({map:netTex, transparent:true, side:THREE.DoubleSide, depthWrite:false});
   const back = new THREE.Mesh(new THREE.PlaneGeometry(GW, GH), netMat); back.position.set(0, GH/2, sz*(L + GD)); scene.add(back);
@@ -350,16 +371,16 @@ const crowdTex = canvasTex(512, 128, (g, w, h) => {
 crowdTex.wrapS = THREE.RepeatWrapping; crowdTex.repeat.set(4, 1);
 const standMat = new THREE.MeshLambertMaterial({map:crowdTex});
 function stand(w, x, z, ry){
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, 22, 16), standMat);
-  m.position.set(x, 8, z); m.rotation.y = ry; m.rotation.x = 0; scene.add(m);
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, 44, 16), standMat);
+  m.position.set(x, 18, z); m.rotation.y = ry; m.rotation.x = 0; scene.add(m);
 }
 stand(L*2 + 30, -W - 22, 0, Math.PI/2); stand(L*2 + 30, W + 22, 0, Math.PI/2);
 stand(W*2 + 30, 0, -L - GD - 20, 0); stand(W*2 + 30, 0, L + GD + 20, 0);
 for (const sx of [-1, 1]) for (const sz of [-1, 1]){
-  const pole = new THREE.Mesh(new THREE.CylinderGeometry(.6, .8, 50, 8), new THREE.MeshLambertMaterial({color:0x30364f}));
-  pole.position.set(sx*(W + 30), 25, sz*(L + 25)); scene.add(pole);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(.6, .8, 64, 8), new THREE.MeshLambertMaterial({color:0x30364f}));
+  pole.position.set(sx*(W + 30), 32, sz*(L + 25)); scene.add(pole);
   const lamp = new THREE.Mesh(new THREE.BoxGeometry(8, 3, 1), new THREE.MeshBasicMaterial({color:0xfff6d8}));
-  lamp.position.set(sx*(W + 30), 50, sz*(L + 25)); lamp.lookAt(0, 0, 0); scene.add(lamp);
+  lamp.position.set(sx*(W + 30), 64, sz*(L + 25)); lamp.lookAt(0, 0, 0); scene.add(lamp);
 }
 
 /* ---------- collision planes: inside of the arena ---------- */
@@ -416,63 +437,107 @@ ballShadow.rotation.x = -Math.PI/2; scene.add(ballShadow);
 
 /* ---------- car models ---------- */
 const M = (c, e) => new THREE.MeshStandardMaterial({color:c, roughness:.45, metalness:.25, emissive:e || 0x000000});
+const paintMat = c => new THREE.MeshPhysicalMaterial({color:c, metalness:.5, roughness:.3, clearcoat:1, clearcoatRoughness:.06, envMapIntensity:1.2});
+const glassMat = new THREE.MeshPhysicalMaterial({color:0x0b1222, metalness:.9, roughness:.04, clearcoat:1, envMapIntensity:1.6});
+const chromeMat = new THREE.MeshStandardMaterial({color:0xd8dde8, metalness:1, roughness:.18});
+const tireMat = new THREE.MeshStandardMaterial({color:0x15161b, roughness:.85, metalness:0});
+const darkMat = new THREE.MeshStandardMaterial({color:0x1b1e29, roughness:.5, metalness:.4});
+// a side profile (z forward = +x of the shape, height = y) extruded across the car's width with rounded edges
+function extrudeSide(points, width, mat, bevel){
+  const sh = new THREE.Shape();
+  points.forEach((p, i) => p.length === 4 ? sh.quadraticCurveTo(p[0], p[1], p[2], p[3]) : i ? sh.lineTo(p[0], p[1]) : sh.moveTo(p[0], p[1]));
+  const b = bevel == null ? .12 : bevel;
+  const geo = new THREE.ExtrudeGeometry(sh, {depth:Math.max(.05, width - b*2), bevelEnabled:true, bevelThickness:b, bevelSize:b*.8, bevelSegments:4, curveSegments:14});
+  geo.translate(0, 0, -(width - b*2)/2); geo.rotateY(Math.PI/2); geo.computeVertexNormals();
+  return new THREE.Mesh(geo, mat);
+}
 function carModel(type, paint, trim, team){
-  const def = CARS[type], [hx, hy, hz] = def.he;
+  const def = CARS[type], [hx, hy, hz0] = def.he, hz = hz0 - .1;
   const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
-  const p = M(paint), t = M(trim), glass = new THREE.MeshStandardMaterial({color:0x101626, roughness:.1, metalness:.6}), tire = M(0x16181f);
+  const p = paintMat(paint), t = paintMat(trim);
   const teamCol = team === 'blue' ? 0x2f8cff : 0xff8a1f, glow = new THREE.MeshBasicMaterial({color:teamCol});
-  const add = (geo, mat, x, y, z, parent = body) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; parent.add(m); return m; };
+  const add = (mesh, x, y, z, parent = body) => { mesh.position.set(x, y, z); mesh.castShadow = true; parent.add(mesh); return mesh; };
+  const box = (w, h, d, mat, x, y, z, parent) => add(new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat), x, y, z, parent);
   const s = def.style;
-  const bodyH = hy*1.1, bodyY = .38 + bodyH/2;
+  const y0 = .34, top = .38 + hy*2, yb = .38 + hy*2*.58;  // bottom, roof, beltline
+  let hull, cabin;
+  // shape x is toward the FRONT of the car (the car drives toward -z)
   if (s === 'wedge'){
-    add(new THREE.BoxGeometry(hx*2, bodyH*.8, hz*2), p, 0, bodyY - .05, 0);
-    const nose = add(new THREE.BoxGeometry(hx*1.9, .18, hz*.9), p, 0, bodyY + .05, -hz*.75); nose.rotation.x = -.18;
-    add(new THREE.BoxGeometry(hx*1.3, hy*.55, hz*.7), glass, 0, bodyY + hy*.5, hz*.15);
+    hull = [[-hz, y0], [-hz, yb + .06], [-hz*.2, yb], [hz, y0 + .2], [hz, y0]];
+    cabin = [[-hz*.62, yb - .04], [-hz*.42, top - .1], [-hz*.02, top - .1], [hz*.4, yb - .2]];
   } else if (s === 'buggy'){
-    add(new THREE.BoxGeometry(hx*2, bodyH, hz*1.9), p, 0, bodyY, 0);
-    add(new THREE.BoxGeometry(hx*1.6, hy*.8, hz*.8), glass, 0, bodyY + hy*.8, hz*.2);
-    add(new THREE.BoxGeometry(hx*2.1, .14, .3), t, 0, bodyY + hy*.9, -hz*.95);
+    hull = [[-hz, y0], [-hz, yb], [hz*.55, yb + .08], [hz, yb - .02], [hz, y0]];
+    cabin = [[-hz*.55, yb], [-hz*.5, top], [hz*.12, top], [hz*.3, yb]];
   } else if (s === 'truck'){
-    add(new THREE.BoxGeometry(hx*2, bodyH, hz*2), p, 0, bodyY, 0);
-    add(new THREE.BoxGeometry(hx*1.8, hy*.9, hz*.8), p, 0, bodyY + hy*.9, -hz*.1);
-    add(new THREE.BoxGeometry(hx*1.75, hy*.6, .05), glass, 0, bodyY + hy*.95, -hz*.52);
-    add(new THREE.BoxGeometry(hx*2.15, .25, .3), t, 0, bodyY - .1, -hz - .05);
+    hull = [[-hz, y0], [-hz, yb + .1], [hz*.6, yb + .1], [hz, yb - .05], [hz, y0]];
+    cabin = [[-hz*.15, yb + .05], [-hz*.1, top], [hz*.28, top], [hz*.45, yb + .05]];
   } else if (s === 'bubble'){
-    add(new THREE.BoxGeometry(hx*2, bodyH*.8, hz*2), p, 0, bodyY - .05, 0);
-    const dome = add(new THREE.SphereGeometry(hx*.85, 16, 10, 0, Math.PI*2, 0, Math.PI/2), glass, 0, bodyY + hy*.3, hz*.05);
-    dome.scale.set(1, .9, 1.3);
+    hull = [[-hz, y0], [-hz, yb*.75], [-hz, yb, -hz*.55, yb], [hz*.55, yb], [hz, yb, hz, yb*.7], [hz, y0]];
+    cabin = null;
   } else {
-    add(new THREE.BoxGeometry(hx*2, bodyH*.85, hz*2), p, 0, bodyY - .03, 0);
-    const cab = add(new THREE.BoxGeometry(hx*1.5, hy*.75, hz*.95), glass, 0, bodyY + hy*.62, hz*.1);
-    add(new THREE.BoxGeometry(hx*1.52, .1, hz*.97), p, 0, bodyY + hy*1.02, hz*.1);
+    hull = [[-hz, y0], [-hz, yb + .04], [-hz*.6, yb + .02], [hz*.5, yb], [hz, yb - .2], [hz, y0]];
+    cabin = [[-hz*.62, yb], [-hz*.36, top], [hz*.08, top], [hz*.46, yb]];
   }
-  // stripe and spoiler in trim color
-  add(new THREE.BoxGeometry(.35, .04, hz*2.02), t, 0, bodyY + bodyH*.43, 0);
-  if (s !== 'truck'){
-    add(new THREE.BoxGeometry(hx*1.9, .08, .45), t, 0, bodyY + hy*1.05, hz*.95);
-    for (const sx of [-1, 1]) add(new THREE.BoxGeometry(.08, .35, .2), t, sx*hx*.7, bodyY + hy*.85, hz*.95);
+  add(extrudeSide(hull, hx*2, p), 0, 0, 0);
+  if (cabin) add(extrudeSide(cabin, hx*1.62, glassMat, .1), 0, 0, 0);
+  else { const dome = add(new THREE.Mesh(new THREE.SphereGeometry(hx*.82, 24, 14, 0, Math.PI*2, 0, Math.PI/2), glassMat), 0, yb - .02, hz*.05); dome.scale.set(1, .95, 1.35); }
+  // dark lower skirt, grille and bumpers
+  box(hx*2.02, .16, hz*2.04, darkMat, 0, y0 + .02, 0);
+  box(hx*1.3, .14, .08, darkMat, 0, y0 + .2, -hz - .14);
+  // trim racing stripes over the hood and roof
+  for (const sx of [-1, 1]) box(.16, .03, hz*1.2, t, sx*.22, yb + .02, -hz*.35);
+  // team-color side stripe and underglow
+  for (const sx of [-1, 1]) box(.03, .1, hz*1.7, glow, sx*(hx + .02), y0 + .28, 0);
+  box(hx*1.8, .04, hz*1.8, glow, 0, .3, 0);
+  // headlights and tail lights
+  const head = new THREE.MeshBasicMaterial({color:0xfff6d0}), tail = new THREE.MeshBasicMaterial({color:0xff3044});
+  for (const sx of [-1, 1]){
+    box(.34, .1, .08, head, sx*hx*.62, yb - (s === 'wedge' ? .32 : .16), -hz - .1);
+    box(.36, .1, .06, tail, sx*hx*.66, yb - .08, hz + .1);
   }
-  // team-color underglow strip and headlights
-  add(new THREE.BoxGeometry(hx*2.02, .06, hz*2.02), glow, 0, .33, 0);
-  for (const sx of [-1, 1]) add(new THREE.BoxGeometry(.3, .12, .05), new THREE.MeshBasicMaterial({color:0xfff6c8}), sx*hx*.65, bodyY, -hz - .01);
-  // boost nozzle
-  add(new THREE.CylinderGeometry(.16, .2, .3, 10), M(0x2b2f45), 0, bodyY - .05, hz + .1).rotation.x = Math.PI/2;
+  // spoiler on struts with end plates
+  if (s !== 'truck' && s !== 'buggy'){
+    const wy = yb + hy*.55;
+    box(hx*1.95, .07, .5, t, 0, wy, hz*.92);
+    for (const sx of [-1, 1]){ box(.06, .3, .55, t, sx*hx*.98, wy - .05, hz*.92); box(.07, wy - yb, .12, darkMat, sx*hx*.5, (wy + yb)/2, hz*.9); }
+  } else if (s === 'truck'){
+    // pickup bed rails and a roll bar
+    for (const sx of [-1, 1]) box(.1, .22, hz*.95, t, sx*hx*.9, yb + .2, hz*.48);
+    box(hx*1.9, .1, .1, t, 0, top - .05, hz*.02);
+    for (const sx of [-1, 1]) box(.1, top - yb, .1, t, sx*hx*.9, (top + yb)/2, hz*.02);
+  } else {
+    // buggy roll cage
+    for (const sx of [-1, 1]) for (const zz of [-hz*.48, hz*.28]) box(.08, top - yb + .1, .08, darkMat, sx*hx*.82, (top + yb)/2 + .05, zz);
+    box(hx*1.7, .08, .08, t, 0, top + .08, -hz*.48); box(hx*1.7, .08, .08, t, 0, top + .08, hz*.28);
+  }
+  // antenna with a team-color tip
+  const ant = add(new THREE.Mesh(new THREE.CylinderGeometry(.015, .02, .6, 6), darkMat), hx*.55, top + .2, hz*.55);
+  add(new THREE.Mesh(new THREE.SphereGeometry(.08, 10, 8), glow), 0, .32, 0, ant);
+  // boost nozzle with a glowing ring
+  const noz = add(new THREE.Mesh(new THREE.CylinderGeometry(.2, .26, .34, 16, 1, true), chromeMat), 0, y0 + .32, hz + .14); noz.rotation.x = Math.PI/2;
+  const ring = add(new THREE.Mesh(new THREE.TorusGeometry(.17, .035, 8, 20), glow), 0, y0 + .32, hz + .31);
+  // wheels: tire, chrome rim, spokes in trim color
   const wheels = [];
-  const wr = s === 'truck' || s === 'buggy' ? .46 : .4;
+  const wr = s === 'truck' || s === 'buggy' ? .48 : .42;
   for (const sx of [-1, 1]) for (const sz of [-1, 1]){
-    const wg = new THREE.Group(); wg.rotation.order = 'YXZ'; wg.position.set(sx*(hx + .05), wr, sz*hz*.68); g.add(wg);
-    const w = add(new THREE.CylinderGeometry(wr, wr, .34, 16), tire, 0, 0, 0, wg); w.rotation.z = Math.PI/2;
-    add(new THREE.CylinderGeometry(wr*.55, wr*.55, .36, 10), t, 0, 0, 0, wg).rotation.z = Math.PI/2;
+    const wg = new THREE.Group(); wg.rotation.order = 'YXZ'; wg.position.set(sx*(hx - .02), wr, sz*hz*.66); g.add(wg);
+    add(new THREE.Mesh(new THREE.CylinderGeometry(wr, wr, .38, 24), tireMat), 0, 0, 0, wg).rotation.z = Math.PI/2;
+    add(new THREE.Mesh(new THREE.TorusGeometry(wr*.98, .06, 8, 24), tireMat), sx*.19, 0, 0, wg).rotation.y = Math.PI/2;
+    add(new THREE.Mesh(new THREE.CylinderGeometry(wr*.6, wr*.6, .4, 20), chromeMat), 0, 0, 0, wg).rotation.z = Math.PI/2;
+    for (let k = 0; k < 5; k++){ const sp = box(.05, wr*1.05, .09, t, sx*.21, 0, 0, wg); sp.rotation.x = k*Math.PI*2/5; }
+    add(new THREE.Mesh(new THREE.CylinderGeometry(.09, .09, .44, 10), glow), 0, 0, 0, wg).rotation.z = Math.PI/2;
     wheels.push({g:wg, front:sz < 0});
   }
-  const flame = new THREE.Mesh(new THREE.ConeGeometry(.22, 1.4, 10), new THREE.MeshBasicMaterial({color:team === 'blue' ? 0x7fd4ff : 0xffc46b, transparent:true, opacity:.9}));
-  flame.rotation.x = -Math.PI/2; flame.position.set(0, bodyY - .05, hz + .9); body.add(flame); flame.visible = false;
-  return {group:g, body, wheels, flame};
+  const flame = new THREE.Group(); flame.position.set(0, y0 + .32, hz + .9); body.add(flame); flame.visible = false;
+  const outer = new THREE.Mesh(new THREE.ConeGeometry(.26, 1.6, 12), new THREE.MeshBasicMaterial({color:team === 'blue' ? 0x7fd4ff : 0xffc46b, transparent:true, opacity:.75}));
+  const inner = new THREE.Mesh(new THREE.ConeGeometry(.12, 1, 10), new THREE.MeshBasicMaterial({color:0xffffff}));
+  outer.rotation.x = inner.rotation.x = -Math.PI/2; inner.position.z = -.25; flame.add(outer, inner);
+  return {group:g, body, wheels, flame, ring};
 }
 
 /* ---------- car state ---------- */
 function makeCar(team){
-  return {team, pos:new V(), vel:new V(), yaw:0, pitch:0, roll:0, onGround:true, boost:33, jumpT:0, canDouble:false, jumped:false,
+  return {team, pos:new V(), vel:new V(), q:new THREE.Quaternion(), surf:PLANES[0], jumpN:new V(0, 1, 0), onGround:true, boost:33, jumpT:0, canDouble:false, jumped:false,
     dodgeT:0, dodgeAxis:'pitch', dodgeSign:1, demoT:0, model:null, type:'hornet', def:CARS.hornet, input:blankInput(), wheelSpin:0,
     stats:{shots:0, saves:0, demos:0, top:0}, stuckT:0, revT:0};
 }
@@ -486,14 +551,14 @@ function setCarModel(car, type, paint, trim){
   scene.add(car.model.group);
 }
 const quat = new THREE.Quaternion(), euler = new THREE.Euler(0, 0, 0, 'YXZ');
-function carQuat(car, out){ euler.set(car.pitch, car.yaw, car.roll, 'YXZ'); return out.setFromEuler(euler); }
+function carQuat(car, out){ return out.copy(car.q); }
 const fwdOf = (car, out) => out.set(0, 0, -1).applyQuaternion(carQuat(car, quat));
 
 /* ---------- boost pads ---------- */
 const pads = [];
 const bigPos = [[-W + 6, -L + 8], [W - 6, -L + 8], [-W + 6, L - 8], [W - 6, L - 8], [-W + 3, 0], [W - 3, 0]];
-const smallPos = [[0, -L + 10], [0, L - 10], [-14, -L + 16], [14, -L + 16], [-14, L - 16], [14, L - 16], [-26, -32], [26, -32], [-26, 32], [26, 32],
-  [0, -34], [0, 34], [-12, -20], [12, -20], [-12, 20], [12, 20], [-28, -10], [28, -10], [-28, 10], [28, 10], [0, -16], [0, 16], [-14, 0], [14, 0]];
+const smallPos = [[0, -50], [0, 50], [-14, -44], [14, -44], [-14, 44], [14, 44], [-26, -32], [26, -32], [-26, 32], [26, 32],
+  [0, -34], [0, 34], [-12, -20], [12, -20], [-12, 20], [12, 20], [-28, -10], [28, -10], [-28, 10], [28, 10], [0, -16], [0, 16], [-14, 0], [14, 0]].map(([x, z]) => [x*W/41, z*L/60]);
 const padGlow = new THREE.MeshBasicMaterial({color:0xffb11f});
 const padBase = new THREE.MeshLambertMaterial({color:0x3a3220});
 function addPad(x, z, big){
@@ -627,60 +692,81 @@ function readPlayerInput(){
 }
 
 /* ---------- car physics ---------- */
-const MAX_DRIVE = 23, MAX_SPEED = 38, SUPERSONIC = 32;
-const tF = new V(), tR = new V(), tU = new V(), tmp = new V(), tmp2 = new V();
+const MAX_DRIVE = 25, MAX_SPEED = 44, SUPERSONIC = 34;
+const FLOOR = PLANES[0], UP = new V(0, 1, 0), AX = new V(1, 0, 0), AY = new V(0, 1, 0), AZ = new V(0, 0, 1);
+const tF = new V(), tR = new V(), tU = new V(), tmp = new V(), tmp2 = new V(), cpos = new V();
+const qa = new THREE.Quaternion(), qb = new THREE.Quaternion(), QI = new THREE.Quaternion();
+const upOf = (car, out) => out.set(0, 1, 0).applyQuaternion(car.q);
+function setYaw(car, a){ car.q.setFromAxisAngle(AY, a); car.surf = FLOOR; car.onGround = true; }
+// flat direction the car is facing (works even when the nose points straight up or down)
+function headingOf(car, out){
+  fwdOf(car, out); out.y = 0;
+  if (out.lengthSq() < .02){ upOf(car, out); out.y = 0; if (out.lengthSq() < 1e-4) out.set(0, 0, -1); else out.multiplyScalar(-Math.sign(fwdOf(car, tmp2).y) || -1); }
+  return out.normalize();
+}
+const isEnd = pl => pl.kind === 'endN' || pl.kind === 'endP';
+// you can drive on everything except across the open goal mouth
+function canDrive(pl, p){ return !(isEnd(pl) && Math.abs(p.x) < GW/2 + 1.2 && p.y < GH + 1); }
+function detach(car){ car.surf = null; car.onGround = false; }
 function boostMode(){ return settings.boostMode; }
 function stepCar(car, dt, G){
   if (car.demoT > 0) return;
-  const inp = car.input, def = car.def, spd = settings.carSpeed;
+  const inp = car.input, def = car.def, spd = settings.carSpeed, ch = .38 + def.he[1], R = 1.05;
   car.jumpT += dt;
   const boosting = inp.boost && (boostMode() === 'unlimited' || (boostMode() === 'normal' && car.boost > 0));
   if (boosting && boostMode() === 'normal') car.boost = Math.max(0, car.boost - 33*dt);
   car.boosting = boosting;
-  if (car.onGround){
-    const fx = -Math.sin(car.yaw), fz = -Math.cos(car.yaw);
-    tF.set(fx, 0, fz); tR.set(-fz, 0, fx);
+  if (car.surf && !canDrive(car.surf, car.pos)) detach(car);
+  if (car.surf){
+    const n = car.surf.n;
+    fwdOf(car, tF); tF.addScaledVector(n, -tF.dot(n)).normalize();
+    tR.crossVectors(tF, n);
     let vF = car.vel.dot(tF), vR = car.vel.dot(tR);
+    // on walls and the ceiling gravity still pulls you down along the surface
+    if (car.surf !== FLOOR){ vF -= G*tF.y*dt; vR -= G*tR.y*dt; }
     const t = inp.t;
     if (t > 0){
       if (vF < -.5) vF = Math.min(0, vF + 38*dt*t);
-      else if (vF < MAX_DRIVE*spd) vF += 24*def.accel*spd*(1 - Math.max(0, vF)/(MAX_DRIVE*spd)*.75)*t*dt;
+      else if (vF < MAX_DRIVE*spd) vF += 26*def.accel*spd*(1 - Math.max(0, vF)/(MAX_DRIVE*spd)*.75)*t*dt;
     } else if (t < 0){
       if (vF > .5) vF = Math.max(0, vF + 38*dt*t);
       else vF = Math.max(-14*spd, vF + 18*dt*t);
     } else {
-      vF -= Math.sign(vF)*Math.min(Math.abs(vF), 5*dt);
+      vF -= Math.sign(vF)*Math.min(Math.abs(vF), (car.surf === FLOOR ? 5 : 3)*dt);
     }
-    if (boosting) vF = Math.min(MAX_SPEED*spd, vF + 30*dt*spd);
+    if (boosting) vF = Math.min(MAX_SPEED*spd, vF + 32*dt*spd);
     else if (vF > MAX_DRIVE*spd) vF = Math.max(MAX_DRIVE*spd, vF - 8*dt);
     vR *= Math.exp(-(inp.slide ? 1.6 : 11)*dt);
     const sp = Math.abs(vF);
     let rate = def.turn*(3.1 - 1.5*Math.min(1, sp/MAX_DRIVE))*(inp.slide ? 1.5 : 1);
     if (sp < 1.2) rate *= sp/1.2;
-    car.yaw -= inp.s*rate*(vF >= 0 ? 1 : -1)*dt;
+    qa.setFromAxisAngle(n, -inp.s*rate*(vF >= 0 ? 1 : -1)*dt); car.q.premultiply(qa);
     car.vel.copy(tF).multiplyScalar(vF).addScaledVector(tR, vR);
-    car.vel.y = 0;
-    car.pitch = lerp(car.pitch, 0, Math.min(1, dt*14)); car.roll = lerp(car.roll, 0, Math.min(1, dt*14));
-    if (inp.jump){
-      car.vel.y = 10.4; car.onGround = false; car.jumpT = 0; car.canDouble = true; car.jumped = true;
+    // keep the wheels flat on the surface
+    upOf(car, tU); qb.setFromUnitVectors(tU, n); qa.copy(QI).slerp(qb, Math.min(1, dt*16)); car.q.premultiply(qa).normalize();
+    // too slow on a steep wall or the ceiling: you fall off
+    if (car.surf !== FLOOR && n.y < .7 && sp < 5){ detach(car); car.vel.addScaledVector(n, 1.5); car.jumped = false; car.jumpT = 9; }
+    else if (inp.jump){
+      car.vel.addScaledVector(n, 10.4); car.jumpN.copy(n); detach(car);
+      car.jumpT = 0; car.canDouble = true; car.jumped = true;
       if (car === blue) sfx.jump();
       inp.jump = false;
     }
   } else {
-    // air control
+    // air control: pitch, yaw and roll around the car's own axes
     const pitchIn = settings.airPitch === 'classic' && car === blue ? -inp.t : inp.t;
     if (car.dodgeT <= 0){
-      car.pitch += pitchIn*3.6*dt;
-      car.yaw -= inp.s*2.7*dt;
-      car.roll -= inp.roll*4.2*dt;
+      qa.setFromAxisAngle(AX, pitchIn*3.8*dt); car.q.multiply(qa);
+      qa.setFromAxisAngle(AY, -inp.s*2.9*dt); car.q.multiply(qa);
+      qa.setFromAxisAngle(AZ, -inp.roll*4.4*dt); car.q.multiply(qa);
+      car.q.normalize();
     }
     if (inp.jump){
       if (car.canDouble && car.jumpT < 1.45){
         car.canDouble = false;
         const mag = Math.hypot(inp.t, inp.s);
         if (mag > .25){
-          const fx = -Math.sin(car.yaw), fz = -Math.cos(car.yaw);
-          tF.set(fx, 0, fz); tR.set(-fz, 0, fx);
+          headingOf(car, tF); tR.crossVectors(tF, UP);
           tmp.copy(tF).multiplyScalar(inp.t).addScaledVector(tR, inp.s).normalize();
           car.vel.addScaledVector(tmp, 11.5);
           car.vel.y = Math.max(car.vel.y*.25, 1.5);
@@ -688,18 +774,18 @@ function stepCar(car, dt, G){
           if (Math.abs(inp.t) >= Math.abs(inp.s)){ car.dodgeAxis = 'pitch'; car.dodgeSign = inp.t > 0 ? -1 : 1; }
           else { car.dodgeAxis = 'roll'; car.dodgeSign = inp.s > 0 ? -1 : 1; }
         } else {
-          car.vel.y += 8.4;
+          car.vel.addScaledVector(upOf(car, tmp), 8.4);
         }
         if (car === blue) sfx.jump();
       }
       inp.jump = false;
     }
-    if (car.jumpT < .2 && inp.jumpHeld && car.jumped) car.vel.y += 14*dt; // hold jump to go a bit higher
+    if (car.jumpT < .2 && inp.jumpHeld && car.jumped) car.vel.addScaledVector(car.jumpN, 14*dt); // hold jump to go a bit higher
     if (boosting){
       fwdOf(car, tmp);
-      car.vel.addScaledVector(tmp, 30*dt*spd);
+      car.vel.addScaledVector(tmp, 42*dt*spd);  // stronger than gravity, so you can fly
     } else if (inp.t){
-      tmp.set(-Math.sin(car.yaw), 0, -Math.cos(car.yaw));
+      headingOf(car, tmp);
       car.vel.addScaledVector(tmp, inp.t*3*dt);
     }
     car.vel.y -= G*dt;
@@ -708,25 +794,69 @@ function stepCar(car, dt, G){
   const sp = car.vel.length();
   if (sp > MAX_SPEED*spd) car.vel.multiplyScalar(MAX_SPEED*spd/sp);
   car.pos.addScaledVector(car.vel, dt);
-  // world: floor for the wheels, walls via a sphere at the body
-  if (car.pos.y <= 0 && car.vel.y <= 0){
-    if (!car.onGround){
-      car.onGround = true; car.jumped = false; car.dodgeT = 0; car.canDouble = false;
-      car.pitch = 0; car.roll = 0;
+
+  // world: stick to the surface we drive on, roll onto walls, land on anything
+  upOf(car, tU);
+  cpos.copy(car.pos).addScaledVector(tU, ch);
+  const inGoal = Math.abs(cpos.z) > L - 1.5 && Math.abs(cpos.x) < GW/2 && cpos.y < GH;
+  let moved = false;
+  for (const pl of PLANES){
+    if (inGoal && isEnd(pl) && Math.sign(cpos.z) === Math.sign(pl.n.z*-1)) continue;
+    const n = pl.n;
+    if (pl === car.surf){
+      const d = car.pos.dot(n) - pl.d;
+      car.pos.addScaledVector(n, -d);
+      const vn = car.vel.dot(n); if (vn) car.vel.addScaledVector(n, -vn);
+      continue;
     }
-    car.pos.y = 0; car.vel.y = 0;
-  } else if (car.pos.y > .02) car.onGround = false;
-  tmp2.set(car.pos.x, car.pos.y + .7, car.pos.z);
-  const before = tmp2.clone();
-  collideWorld(tmp2, car.vel, 1.25, .15, 1, true);
-  car.pos.x += tmp2.x - before.x; car.pos.z += tmp2.z - before.z;
-  if (tmp2.y < before.y) car.pos.y += tmp2.y - before.y;
-  if (car.pos.y < 0) car.pos.y = 0;
+    const dc = cpos.dot(n) - pl.d, dp = car.pos.dot(n) - pl.d, vn = car.vel.dot(n);
+    const aligned = tU.dot(n) > .6;
+    const touching = aligned ? dp < .02 : dc < R;
+    if (!touching) continue;
+    const drivable = canDrive(pl, car.pos) && !(Math.abs(car.pos.z) > L && pl !== FLOOR);
+    if (car.surf && !moved && drivable && vn < -.5 && car.vel.length() > 4){
+      // drive from one surface onto the next (floor to wall, wall to corner, wall to ceiling...)
+      const nA = car.surf.n;
+      qb.setFromUnitVectors(nA, n);
+      car.vel.applyQuaternion(qb); car.q.premultiply(qb).normalize();
+      tmp.copy(nA).addScaledVector(n, -nA.dot(n));
+      if (tmp.lengthSq() > 1e-4) tmp.normalize();
+      const along = Math.max(0, dp);
+      car.pos.addScaledVector(n, -dp).addScaledVector(tmp, along);
+      car.surf = pl; moved = true;
+      upOf(car, tU); cpos.copy(car.pos).addScaledVector(tU, ch);
+    } else if (!car.surf && drivable && vn < 1){
+      // landing: wheels go onto whatever surface we hit
+      car.surf = pl;
+      if (aligned) car.pos.addScaledVector(n, -dp);
+      else car.pos.copy(cpos).addScaledVector(n, -dc);
+      car.vel.addScaledVector(n, -vn);
+      car.jumped = false; car.dodgeT = 0; car.canDouble = false;
+      upOf(car, tU); cpos.copy(car.pos).addScaledVector(tU, ch);
+    } else {
+      // a solid wall we can't drive on here: bump off it
+      const push = aligned && pl === FLOOR ? -dp : R - dc;
+      if (push > 0) car.pos.addScaledVector(n, push);
+      if (vn < 0) car.vel.addScaledVector(n, -vn*1.15);
+      cpos.copy(car.pos).addScaledVector(tU, ch);
+    }
+  }
+  // inside a goal: the net walls keep the car in
+  if (Math.abs(car.pos.z) > L){
+    const lim = GW/2 - 1.1, sz = Math.sign(car.pos.z), back = L + GD - 1.9;
+    if (car.pos.x > lim){ car.pos.x = lim; if (car.vel.x > 0) car.vel.x = 0; }
+    if (car.pos.x < -lim){ car.pos.x = -lim; if (car.vel.x < 0) car.vel.x = 0; }
+    if (Math.abs(car.pos.z) > back){ car.pos.z = sz*back; if (car.vel.z*sz > 0) car.vel.z = 0; }
+    if (car.pos.y > GH - 2*ch){ car.pos.y = GH - 2*ch; if (car.vel.y > 0) car.vel.y = 0; }
+  }
+  // safety net: never leave the arena
+  car.pos.x = clamp(car.pos.x, -W, W); car.pos.y = clamp(car.pos.y, 0, CEIL); car.pos.z = clamp(car.pos.z, -L - GD, L + GD);
+  car.onGround = !!car.surf;
   // boost pads
-  if (settings.pads && boostMode() === 'normal' && car.pos.y < 2){
+  if (settings.pads && boostMode() === 'normal' && car.surf === FLOOR){
     for (const p of pads){
       if (p.t > 0) continue;
-      const r = p.big ? 2.4 : 1.6;
+      const r = p.big ? 2.6 : 1.7;
       if ((car.pos.x - p.x)**2 + (car.pos.z - p.z)**2 < r*r && car.boost < 100){
         car.boost = Math.min(100, car.boost + (p.big ? 100 : 12));
         p.t = p.big ? 10 : 4;
@@ -809,7 +939,7 @@ function demolish(vic, att){
 function respawn(car){
   const sz = car.team === 'blue' ? 1 : -1;
   car.pos.set((Math.random() - .5)*10, 0, sz*(L - 6)); car.vel.set(0, 0, 0);
-  car.yaw = car.team === 'blue' ? 0 : Math.PI; car.pitch = car.roll = 0; car.onGround = true;
+  setYaw(car, car.team === 'blue' ? 0 : Math.PI);
   car.boost = Math.max(car.boost, 33); car.model.group.visible = true;
 }
 
@@ -869,8 +999,12 @@ function updateCPU(dt){
   // steer toward target
   const dx = ai.target.x - me.pos.x, dz = ai.target.z - me.pos.z;
   const dist = Math.hypot(dx, dz);
-  const want = Math.atan2(-dx, -dz);
-  let diff = want - me.yaw; diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+  const sn = me.surf ? me.surf.n : UP;
+  const fw = fwdOf(me, new V()); fw.addScaledVector(sn, -fw.dot(sn)).normalize();
+  const dir = new V(dx, ai.target.y - me.pos.y, dz);
+  if (me.surf && me.surf !== FLOOR) dir.y -= 14;  // head back down off walls
+  dir.addScaledVector(sn, -dir.dot(sn));
+  const diff = Math.atan2(new V().crossVectors(fw, dir).dot(sn), fw.dot(dir));
   inp.s = clamp(-diff*2.6, -1, 1);
   inp.t = D.speed;
   if (Math.abs(diff) > 2.2 && dist < 10){ inp.t = -1; inp.s = -inp.s; }
@@ -880,22 +1014,25 @@ function updateCPU(dt){
   if (me.vel.length() < 2 && inp.t > 0){ ai.stuck += dt; if (ai.stuck > .8){ ai.reverse = .7; ai.stuck = 0; } } else ai.stuck = 0;
   if (ai.reverse > 0){ ai.reverse -= dt; inp.t = -1; inp.s = -inp.s; inp.boost = false; }
   // jumps, dodges and aerials
-  const ahead = new V(-Math.sin(me.yaw), 0, -Math.cos(me.yaw));
+  const ahead = headingOf(me, new V());
   const toB = new V(ball.pos.x - me.pos.x, 0, ball.pos.z - me.pos.z);
   const facing = toB.length() > 0 ? toB.clone().normalize().dot(ahead) : 0;
   if (me.onGround && dBall < 5.5 && facing > .7 && ball.pos.y > 2.6 && ball.pos.y < 7.5 && Math.random() < .6) { inp.jump = true; ai.jumpPlan = .18; }
   else if (me.onGround && dBall < 4.2 && facing > .8 && ball.pos.y < 2.6 && Math.random() < D.dodge*.4) { inp.jump = true; ai.jumpPlan = .1; }
-  else if (me.onGround && D.aerial > 0 && ball.pos.y > 9 && dBall < 18 && facing > .85 && me.boost > 30 && Math.random() < D.aerial*.05) { inp.jump = true; ai.jumpPlan = -1; }
+  else if (me.surf === FLOOR && D.aerial > 0 && ball.pos.y > 7 && ball.pos.y < 26 && dBall < ball.pos.y*1.8 + 6 && facing > .8 && (me.boost > 25 || boostMode() !== 'normal') && Math.random() < D.aerial*.08) { inp.jump = true; ai.jumpPlan = -1; }
   if (!me.onGround){
     if (ai.jumpPlan > 0){
       ai.jumpPlan -= dt;
       if (ai.jumpPlan <= 0 && Math.random() < D.dodge + .2){ inp.jump = true; inp.t = 1; inp.s = clamp(-diff*2, -1, 1); }
     } else if (ai.jumpPlan < 0){
       // aerial: point the nose at the ball and boost
-      const toBall3 = ball.pos.clone().sub(me.pos);
-      const wantPitch = Math.atan2(toBall3.y, Math.hypot(toBall3.x, toBall3.z));
-      me.pitch = lerp(me.pitch, clamp(wantPitch, -.3, 1.2), Math.min(1, dt*4));
-      inp.t = 0; inp.boost = me.boost > 0 || boostMode() !== 'normal';
+      const lead = ball.pos.clone().addScaledVector(ball.vel, .25).sub(me.pos);
+      if (lead.lengthSq() > 1e-4){
+        lead.y += 2; lead.normalize();
+        qb.setFromUnitVectors(fwdOf(me, new V()), lead); qa.copy(QI).slerp(qb, Math.min(1, dt*4)); me.q.premultiply(qa).normalize();
+      }
+      inp.t = 0; inp.s = 0; inp.boost = me.boost > 0 || boostMode() !== 'normal';
+      if (me.jumpT > 2.5 || ball.pos.y < 3) ai.jumpPlan = 0;
     }
   } else if (ai.jumpPlan < 0) ai.jumpPlan = 0;
 }
@@ -910,11 +1047,11 @@ function kickoff(){
   const k = KICKOFFS[Math.floor(Math.random()*KICKOFFS.length)];
   blue.pos.set(k[0], 0, k[1]); orange.pos.set(-k[0], 0, -k[1]);
   for (const c of cars){
-    c.vel.set(0, 0, 0); c.pitch = c.roll = 0; c.onGround = true; c.boost = 33; c.demoT = 0; c.dodgeT = 0; c.canDouble = false; c.model.group.visible = true;
+    c.vel.set(0, 0, 0); c.surf = FLOOR; c.onGround = true; c.boost = 33; c.demoT = 0; c.dodgeT = 0; c.canDouble = false; c.model.group.visible = true;
     c.input = blankInput();
   }
-  blue.yaw = Math.atan2(blue.pos.x, blue.pos.z);
-  orange.yaw = Math.atan2(orange.pos.x, orange.pos.z);
+  setYaw(blue, Math.atan2(blue.pos.x, blue.pos.z));
+  setYaw(orange, Math.atan2(orange.pos.x, orange.pos.z));
   for (const p of pads) p.t = 0;
   state = 'countdown'; countdown = 3; lastCount = 4; ai.kickoff = true; ai.retarget = 0;
 }
@@ -1040,15 +1177,14 @@ const camPos = new V(0, 20, 60), camLook = new V(), q2 = new THREE.Quaternion();
 function syncCar(car, dt){
   const m = car.model; if (!m) return;
   m.group.position.copy(car.pos);
-  let pitch = car.pitch, roll = car.roll;
-  if (car.dodgeT > 0){ const k = 1 - car.dodgeT/.62; if (car.dodgeAxis === 'pitch') pitch += car.dodgeSign*k*Math.PI*2; else roll += car.dodgeSign*k*Math.PI*2; }
-  euler.set(pitch, car.yaw, roll, 'YXZ'); m.group.quaternion.setFromEuler(euler);
-  const fv = car.vel.dot(tmp.set(-Math.sin(car.yaw), 0, -Math.cos(car.yaw)));
+  m.group.quaternion.copy(car.q);
+  if (car.dodgeT > 0){ const k = 1 - car.dodgeT/.62; q2.setFromAxisAngle(car.dodgeAxis === 'pitch' ? AX : AZ, car.dodgeSign*k*Math.PI*2); m.group.quaternion.multiply(q2); }
+  const fv = car.vel.dot(fwdOf(car, tmp));
   car.wheelSpin += fv*dt*2;
   for (const w of m.wheels){ w.g.rotation.x = -car.wheelSpin; w.g.rotation.y = w.front && car.onGround ? -car.input.s*.4 : 0; }
   m.flame.visible = !!car.boosting && car.demoT <= 0;
   if (m.flame.visible){
-    m.flame.scale.set(1, .8 + Math.random()*.5, 1);
+    m.flame.scale.set(1, 1, .8 + Math.random()*.5);
     if (Math.random() < .7){
       fwdOf(car, tmp);
       const p = car.pos.clone().addScaledVector(tmp, -car.def.he[2] - .8); p.y += .7;
@@ -1069,7 +1205,7 @@ function updateCamera(dt){
   }
   if (camera.fov !== settings.fov){ camera.fov = settings.fov; camera.updateProjectionMatrix(); }
   const car = blue, k = 1 - Math.pow(1 - settings.camStiff, dt*20);
-  const fwd = new V(-Math.sin(car.yaw), 0, -Math.cos(car.yaw));
+  const fwd = headingOf(car, new V());
   let dir;
   if (ballCamOn && ball.mesh.visible){
     dir = new V(car.pos.x - ball.pos.x, 0, car.pos.z - ball.pos.z);
@@ -1122,7 +1258,7 @@ function updateSound(){
   engine.bg.gain.value = playing && blue.boosting ? .12 : 0;
 }
 function garagePose(){
-  blue.pos.set(0, 0, 0); blue.vel.set(0, 0, 0); blue.yaw = 0; blue.pitch = blue.roll = 0; blue.onGround = true; blue.boosting = false;
+  blue.pos.set(0, 0, 0); blue.vel.set(0, 0, 0); setYaw(blue, 0); blue.boosting = false;
   orange.model && (orange.model.group.visible = false);
   ball.pos.set(6, 1.9, -6); ball.mesh.scale.setScalar(1.9);
 }
