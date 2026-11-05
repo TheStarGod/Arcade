@@ -33,7 +33,7 @@ h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(36px
   filter:drop-shadow(0 3px 0 #3b0f4f)}
 .doors{width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
 .doors .door:nth-child(-n+2){min-height:250px}
-.door.turbo,.door.cookie,.door.show{padding-top:92px}
+.door.turbo,.door.cookie,.door.show,.door.wobble,.door.retro{padding-top:92px}
 .door{position:relative;display:grid;gap:10px;align-content:end;min-height:200px;padding:22px;border-radius:16px;text-decoration:none;color:var(--ink);text-align:left;
   border:2px solid rgba(255,255,255,.12);overflow:hidden;transition:transform .15s,border-color .15s,box-shadow .15s}
 .door:hover,.door:focus-visible{transform:translateY(-4px);outline:none}
@@ -65,6 +65,16 @@ h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(36px
 .show::before{content:"";position:absolute;right:52px;top:16px;width:52px;height:52px;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 3px #ff3b4f;pointer-events:none;background:linear-gradient(#fff,#fff) center/4px 100% no-repeat,linear-gradient(#fff,#fff) center/100% 4px no-repeat}
 .show h2{text-shadow:3px 3px 0 #ff3b4f}
 .show:hover,.show:focus-visible{border-color:#ff3b4f;box-shadow:0 0 30px rgba(255,59,79,.4)}
+.wobble{background:radial-gradient(ellipse at 75% 10%,rgba(255,236,120,.45),transparent 55%),linear-gradient(170deg,#4fc35a 0%,#2a8a3c 55%,#145a24 100%)}
+.wobble::before{content:"";position:absolute;right:52px;top:14px;width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#1a1a1a 0 15%,transparent 16%),radial-gradient(circle at 18% 30%,#1a1a1a 0 11%,transparent 12%),radial-gradient(circle at 82% 30%,#1a1a1a 0 11%,transparent 12%),radial-gradient(circle at 30% 85%,#1a1a1a 0 11%,transparent 12%),radial-gradient(circle at 70% 85%,#1a1a1a 0 11%,transparent 12%),radial-gradient(circle at 35% 30%,#fff,#dfe6ef 70%,#aab4c4);box-shadow:0 8px 18px rgba(0,0,0,.35);animation:wob 1.6s ease-in-out infinite;transform-origin:50% 100%;pointer-events:none}
+@keyframes wob{25%{transform:skewX(8deg) scaleY(.94)}75%{transform:skewX(-8deg) scaleY(1.04)}}
+.wobble h2{font-weight:400;text-shadow:3px 3px 0 #0c3a14}
+.wobble:hover,.wobble:focus-visible{border-color:#ffec78;box-shadow:0 0 30px rgba(255,236,120,.4)}
+.retro{background:repeating-linear-gradient(90deg,transparent 0 46px,rgba(255,255,255,.18) 46px 50px),linear-gradient(180deg,#3d8f3a 0%,#2c6e2a 100%);image-rendering:pixelated}
+.retro::before{content:"";position:absolute;right:52px;top:22px;width:56px;height:34px;border-radius:50%;background:#8a4a1c;box-shadow:inset 0 0 0 3px #5a2e0e;pointer-events:none}
+.retro::after{content:"";position:absolute;right:66px;top:37px;width:28px;height:4px;background:repeating-linear-gradient(90deg,#fff 0 3px,transparent 3px 6px);pointer-events:none}
+.retro h2{font-family:'Courier New',monospace;font-weight:700;letter-spacing:.04em;text-shadow:3px 3px 0 #000}
+.retro:hover,.retro:focus-visible{border-color:#fff;box-shadow:0 0 30px rgba(255,255,255,.3)}
 @media (prefers-reduced-motion:reduce){.door{transition:none}}
 
 /* player chip + sign-in panel */
@@ -113,8 +123,20 @@ h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(36px
         <p>1v1 arena shooter. Pick a loadout and win five rounds before your rival does.</p>
         <span class="go">FIGHT</span>
       </a>
+      <a class="door wobble" href="wobble-cup.html" id="to-wobble">
+        <span class="key">6</span>
+        <h2>Wobble Cup</h2>
+        <p>7-a-side jelly soccer. Bullet headers, slide tackles and cups to win.</p>
+        <span class="go">PLAY BALL</span>
+      </a>
+      <a class="door retro" href="throwback-bowl.html" id="to-retro">
+        <span class="key">7</span>
+        <h2>Throwback Bowl</h2>
+        <p>Pixel football. Sling passes, run your franchise and chase the Bowl.</p>
+        <span class="go">HUT HUT</span>
+      </a>
     </div>
-    <p class="foot">Press 1 to 5, or click a door.</p>
+    <p class="foot">Press 1 to 7, or click a door.</p>
   </div>
 </main>
 <script>
@@ -124,6 +146,8 @@ addEventListener('keydown', function (e) {
   if (e.key === '3') location.href = 'turbo-goal.html';
   if (e.key === '4') location.href = 'cookie-empire.html';
   if (e.key === '5') location.href = 'showdown.html';
+  if (e.key === '6') location.href = 'wobble-cup.html';
+  if (e.key === '7') location.href = 'throwback-bowl.html';
 });
 (function () {
   var c = document.getElementById('stars'), g = c.getContext('2d'), stars = [];
