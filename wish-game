@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Genie Wish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@500;700&display=swap">
+<style>
+/* Same night-sky arcade look: slim top bar, a little world in the middle, the wish box at the bottom. */
+:root{--bg:#05050f;--ink:#f3f5ff;--dim:#9aa3c9;--pink:#ec4899;--violet:#a855f7;--gold:#fbbf24;--gold-2:#f59e0b;--teal:#2dd4bf;
+  --font-display:"Bungee","Impact","Arial Black",sans-serif;--font-ui:"Chakra Petch","Segoe UI",system-ui,sans-serif;
+  --emoji:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);display:flex;flex-direction:column}
+#bar{position:relative;z-index:5;width:100%;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;
+  padding:8px max(14px,env(safe-area-inset-right,0px)) 8px max(14px,env(safe-area-inset-left,0px))}
+#bar a{justify-self:start;color:var(--ink);text-decoration:none;font-weight:700;font-size:14px;letter-spacing:.06em;
+  padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
+#bar a:hover,#bar a:focus-visible{border-color:var(--gold);outline:none}
+#bar h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(16px,3.2vw,26px);white-space:nowrap;
+  background:linear-gradient(180deg,#fff 15%,#fde68a 55%,var(--gold-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+#who{justify-self:end;font-weight:700;font-size:13px;letter-spacing:.08em;color:var(--dim);white-space:nowrap}
+#who b{color:#fde68a}
+
+/* the world */
+#stage{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none}
+.sky{position:absolute;inset:0;opacity:0;transition:opacity 1.2s}
+.sky.on{opacity:1}
+#sky-dusk{background:linear-gradient(180deg,#0b0726 0%,#2a0f4a 55%,#5b1f5f 100%)}
+#sky-day{background:linear-gradient(180deg,#3aa0ff 0%,#8fd3ff 70%,#d8f1ff 100%)}
+#sky-night{background:linear-gradient(180deg,#010108 0%,#0a0b25 70%,#151838 100%)}
+#sky-storm{background:linear-gradient(180deg,#1b1f2a 0%,#2f3645 70%,#454d5e 100%)}
+#moon{position:absolute;right:9%;top:8%;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fffbe6,#f5e7a8 60%,#cdbb6a);
+  box-shadow:0 0 50px rgba(255,240,180,.5);transition:opacity 1.2s,background 1.2s}
+#stage[data-sky="day"] #moon{background:radial-gradient(circle,#fff7c2,#ffd23f 60%,#ffb703);box-shadow:0 0 80px rgba(255,210,63,.8)}
+#stage[data-sky="storm"] #moon{opacity:0}
+#rainbow{position:absolute;left:50%;top:6%;width:min(900px,120%);aspect-ratio:2/1;max-width:none;transform:translateX(-50%);border-radius:50% 50% 0 0/100% 100% 0 0;
+  background:radial-gradient(circle at 50% 100%,transparent 52%,#a855f7 52% 55%,#3b82f6 55% 58%,#22c55e 58% 61%,#facc15 61% 64%,#f97316 64% 67%,#ef4444 67% 70%,transparent 70%);
+  opacity:0;transition:opacity 1.5s;pointer-events:none}
+#rainbow.on{opacity:.8}
+#ground{position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,#3b1d5e 0%,#24123f 100%);border-top:3px solid #7c3aed;transition:background 1s}
+#stage[data-sky="day"] #ground{background:linear-gradient(180deg,#5fd35a 0%,#2f9b3a 100%);border-top-color:#86efac}
+#stage[data-sky="night"] #ground{background:linear-gradient(180deg,#1c2a3a 0%,#0e1622 100%);border-top-color:#334155}
+#stage[data-sky="storm"] #ground{background:linear-gradient(180deg,#3f4a3a 0%,#263022 100%);border-top-color:#64748b}
+#snowcap{position:absolute;inset:0;background:linear-gradient(180deg,#f8fbff 0%,#dbe7f5 100%);opacity:0;transition:opacity 4s}
+#snowcap.on{opacity:.92}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3000}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:3001}
+
+.thing{position:absolute;left:0;top:0;line-height:1;user-select:none;-webkit-user-select:none;cursor:pointer;will-change:transform;font-family:var(--emoji)}
+.thing .e{display:inline-block;transition:transform .12s}
+.thing.sel::after{content:"";position:absolute;left:5%;right:5%;bottom:-.08em;height:.18em;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(251,191,36,.95),rgba(251,191,36,0));animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.4}}
+.rainbowfx{animation:hue 2s linear infinite}
+@keyframes hue{to{filter:hue-rotate(360deg) drop-shadow(0 0 8px #fff)}}
+.mystery .e{animation:shake 1.4s ease-in-out infinite}
+@keyframes shake{0%,70%,100%{transform:rotate(0)}75%{transform:rotate(-12deg)}85%{transform:rotate(12deg)}}
+.pop{position:absolute;z-index:3002;pointer-events:none;font:700 18px var(--font-display);color:#fff;text-shadow:0 2px 0 #000,0 0 12px rgba(0,0,0,.6);
+  white-space:nowrap;transform:translate(-50%,-100%);animation:rise 1.1s ease-out forwards}
+@keyframes rise{to{transform:translate(-50%,-260%);opacity:0}}
+
+/* the genie */
+#genie{position:absolute;left:max(14px,env(safe-area-inset-left,0px));bottom:12px;z-index:3003;display:flex;align-items:flex-end;gap:8px;pointer-events:none;max-width:calc(100% - 28px)}
+#genie .lamp{font-family:var(--emoji);font-size:44px;line-height:1;filter:drop-shadow(0 0 14px rgba(251,191,36,.7))}
+#genie .who{font-family:var(--emoji);font-size:52px;line-height:1;position:absolute;left:2px;bottom:34px;opacity:0;transform:translateY(20px) scale(.4);transition:all .35s cubic-bezier(.3,1.6,.6,1)}
+#genie.up .who{opacity:1;transform:none}
+#bubble{margin-bottom:36px;max-width:min(420px,72vw);padding:10px 14px;border-radius:14px 14px 14px 4px;background:rgba(10,8,30,.88);border:2px solid var(--gold);
+  font-size:15px;line-height:1.35;font-weight:700;color:#fff7d6;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+#bubble[hidden]{display:none!important}
+
+/* driving hint + touch pad */
+#drivehint{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:3003;padding:6px 12px;border-radius:999px;background:rgba(10,8,30,.75);
+  border:1px solid rgba(251,191,36,.5);font-size:13px;font-weight:700;letter-spacing:.04em;color:#fde68a;white-space:nowrap;max-width:calc(100% - 28px);overflow:hidden;text-overflow:ellipsis}
+#pad{position:absolute;right:max(14px,env(safe-area-inset-right,0px));bottom:14px;z-index:3003;display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,48px);gap:6px}
+#pad button{font:700 20px var(--font-ui);color:#fff;background:rgba(10,8,30,.7);border:2px solid rgba(251,191,36,.6);border-radius:12px;touch-action:none}
+#pad button:active{background:rgba(251,191,36,.35)}
+#pad .u{grid-column:2;grid-row:1}#pad .l{grid-column:1;grid-row:2}#pad .d{grid-column:2;grid-row:2}#pad .r{grid-column:3;grid-row:2}#pad .h{grid-column:3;grid-row:1;font-size:12px}
+@media (pointer:fine){#pad{display:none}}
+
+/* wish box */
+#wishbar{position:relative;z-index:5;display:grid;gap:10px;padding:12px max(16px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:linear-gradient(180deg,#120a2a,#08061a);border-top:2px solid rgba(251,191,36,.35)}
+#wishform{display:flex;gap:10px;width:min(820px,100%);margin:0 auto}
+#wish{flex:1;min-width:0;font:700 18px var(--font-ui);color:var(--ink);background:#0d0a24;border:2px solid rgba(168,85,247,.6);border-radius:12px;padding:12px 14px}
+#wish::placeholder{color:#6f6a99}
+#wish:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(251,191,36,.25)}
+#go{font:400 16px var(--font-display);letter-spacing:.04em;color:#2a1600;background:linear-gradient(180deg,#fde68a,var(--gold) 50%,var(--gold-2));border:0;border-radius:12px;padding:0 18px;cursor:pointer;
+  box-shadow:0 4px 0 #92400e;white-space:nowrap}
+#go:active{transform:translateY(2px);box-shadow:0 2px 0 #92400e}
+#go:focus-visible,.chip:focus-visible,#clear:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;width:min(820px,100%);margin:0 auto}
+.chip,#clear{font:700 13px var(--font-ui);color:var(--ink);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:6px 12px;cursor:pointer}
+.chip:hover{border-color:var(--gold)}
+#clear{color:#fca5a5;border-color:rgba(252,165,165,.35)}
+#count{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:700}
+#count b{color:#fde68a;font-variant-numeric:tabular-nums}
+@media (max-width:560px){#bar h1{display:none}#bar{grid-template-columns:1fr 1fr}#go{padding:0 12px;font-size:14px}.chip.x{display:none}}
+@media (prefers-reduced-motion:reduce){.thing.sel::after,.mystery .e,.rainbowfx{animation:none}.sky,#rainbow{transition:none}}
+</style>
+</head>
+<body>
+<header id="bar">
+  <a href="arcade.html">&larr; Games</a>
+  <h1>Genie Wish</h1>
+  <span id="who"></span>
+</header>
+
+<main id="stage" data-sky="dusk">
+  <div class="sky on" id="sky-dusk"></div>
+  <div class="sky" id="sky-day"></div>
+  <div class="sky" id="sky-night"></div>
+  <div class="sky" id="sky-storm"></div>
+  <div id="moon"></div>
+  <div id="rainbow"></div>
+  <div id="ground"><div id="snowcap"></div></div>
+  <canvas id="fx"></canvas>
+  <div id="flash"></div>
+  <div id="drivehint" hidden></div>
+  <div id="genie"><span class="who" aria-hidden="true">🧞</span><span class="lamp" aria-hidden="true">🪔</span><div id="bubble" role="status"></div></div>
+  <div id="pad" hidden>
+    <button type="button" class="u" data-k="ArrowUp" aria-label="Up">▲</button>
+    <button type="button" class="l" data-k="ArrowLeft" aria-label="Left">◀</button>
+    <button type="button" class="d" data-k="ArrowDown" aria-label="Down">▼</button>
+    <button type="button" class="r" data-k="ArrowRight" aria-label="Right">▶</button>
+    <button type="button" class="h" data-k=" " aria-label="Honk">BEEP</button>
+  </div>
+</main>
+
+<footer id="wishbar">
+  <form id="wishform" autocomplete="off">
+    <label for="wish" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Your wish</label>
+    <input id="wish" type="text" maxlength="120" placeholder="I wish for…  (try: I want a car)">
+    <button id="go" type="submit">Make a wish</button>
+  </form>
+  <div class="row">
+    <button type="button" class="chip">I want a car</button>
+    <button type="button" class="chip">Give me 5 puppies</button>
+    <button type="button" class="chip">I wish it would snow</button>
+    <button type="button" class="chip x">A giant pizza</button>
+    <button type="button" class="chip x">I want to be rich</button>
+    <button type="button" class="chip x">A rocket and fireworks</button>
+    <button type="button" id="clear">Clear world</button>
+    <span id="count">Wishes granted <b id="n">0</b></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  // ---------- player name (shared with the rest of the arcade) ----------
+  var player = null;
+  try { player = JSON.parse(localStorage.getItem("arcadeSession") || "null"); } catch (e) {}
+  var who = document.getElementById("who");
+  if (player && player.name) { who.innerHTML = "Player <b></b>"; who.querySelector("b").textContent = String(player.name).toUpperCase(); }
+  else who.textContent = "Playing as guest";
+  var granted = 0;
+  try { granted = parseInt(localStorage.getItem("genieWishes") || "0", 10) || 0; } catch (e) {}
+  var nEl = document.getElementById("n"); nEl.textContent = granted;
+
+  // ---------- the genie's dictionary ----------
+  // type: drive (car you steer), flyer (you steer in the air), walk, fly, swim, bounce, eat, still, rain, sky
+  var DICT = {}, ALL = [];
+  function def(type, emoji, words, extra) {
+    var list = words.split(","), entry = { type: type, emoji: emoji.split("|"), name: list[0] };
+    if (extra) for (var k in extra) entry[k] = extra[k];
+    list.forEach(function (w) { DICT[w.trim()] = entry; });
+    if (type !== "sky") ALL.push(entry);
+  }
+  def("drive", "🚗", "car,automobile,vehicle");
+  def("drive", "🏎️", "race car,racecar,sports car,ferrari,lamborghini,porsche,supercar");
+  def("drive", "🛻", "truck,pickup,pickup truck");
+  def("drive", "🛻", "monster truck", { size: 2 });
+  def("drive", "🚌", "bus,school bus");
+  def("drive", "🚒", "fire truck,firetruck,fire engine");
+  def("drive", "🚓", "police car,cop car");
+  def("drive", "🚑", "ambulance");
+  def("drive", "🚕", "taxi,cab");
+  def("drive", "🚜", "tractor");
+  def("drive", "🚲", "bike,bicycle");
+  def("drive", "🏍️", "motorcycle,motorbike,dirt bike");
+  def("drive", "🛴", "scooter");
+  def("drive", "🛹", "skateboard");
+  def("drive", "🚂", "train");
+  def("drive", "🚤", "boat,speedboat,ship,yacht");
+  def("flyer", "🚀", "rocket,spaceship,rocket ship,jetpack");
+  def("flyer", "✈️", "plane,airplane,jet,aeroplane");
+  def("flyer", "🚁", "helicopter,chopper");
+  def("flyer", "🛸", "ufo,flying saucer");
+  def("flyer", "🦸", "superpower,superhero,fly,hero,superman,to fly");
+  def("flyer", "🧹", "broom,broomstick");
+  def("walk", "🐕", "dog,puppy,doggy,doggo,pup");
+  def("walk", "🐈", "cat,kitten,kitty");
+  def("walk", "🦄", "unicorn");
+  def("walk", "🐎", "horse,pony");
+  def("walk", "🦖", "dinosaur,dino,t-rex,trex,t rex");
+  def("walk", "🦕", "brontosaurus,long neck");
+  def("walk", "🐘", "elephant");
+  def("walk", "🦁", "lion");
+  def("walk", "🐅", "tiger");
+  def("walk", "🐇", "bunny,rabbit");
+  def("walk", "🐖", "pig,piggy");
+  def("walk", "🐄", "cow");
+  def("walk", "🐒", "monkey");
+  def("walk", "🐼", "panda");
+  def("walk", "🐻", "bear");
+  def("walk", "🦒", "giraffe");
+  def("walk", "🐧", "penguin");
+  def("walk", "🐓", "chicken");
+  def("walk", "🦆", "duck");
+  def("walk", "🐢", "turtle");
+  def("walk", "🐸", "frog");
+  def("walk", "🐍", "snake");
+  def("walk", "🐁", "mouse");
+  def("walk", "🐹", "hamster");
+  def("walk", "🦊", "fox");
+  def("walk", "🐺", "wolf");
+  def("walk", "🐐", "goat");
+  def("walk", "🐑", "sheep");
+  def("walk", "🦍", "gorilla");
+  def("walk", "🐊", "crocodile,alligator");
+  def("walk", "🦔", "hedgehog");
+  def("walk", "🦥", "sloth");
+  def("walk", "🤖", "robot");
+  def("walk", "🧑", "friend,best friend,buddy");
+  def("walk", "🧟", "zombie");
+  def("walk", "👽", "alien");
+  def("walk", "🥷", "ninja");
+  def("walk", "🧙", "wizard");
+  def("walk", "🧜", "mermaid");
+  def("fly", "🐉", "dragon");
+  def("fly", "🐦", "bird");
+  def("fly", "🦋", "butterfly");
+  def("fly", "🐝", "bee");
+  def("fly", "🦇", "bat");
+  def("fly", "🦉", "owl");
+  def("fly", "🦜", "parrot");
+  def("fly", "🦅", "eagle");
+  def("fly", "👻", "ghost");
+  def("fly", "🧚", "fairy");
+  def("fly", "🎈", "balloon,hot air balloon");
+  def("fly", "🪁", "kite");
+  def("fly", "🪐", "planet");
+  def("swim", "🐟", "fish,goldfish");
+  def("swim", "🦈", "shark");
+  def("swim", "🐳", "whale");
+  def("swim", "🐬", "dolphin");
+  def("swim", "🐙", "octopus");
+  def("swim", "🦀", "crab");
+  def("bounce", "⚽", "ball,soccer ball,soccer");
+  def("bounce", "🏀", "basketball");
+  def("bounce", "🏈", "football");
+  def("bounce", "🎾", "tennis ball");
+  def("bounce", "⚾", "baseball");
+  def("bounce", "🏐", "volleyball,beach ball");
+  def("eat", "🍕", "pizza");
+  def("eat", "🍦", "ice cream,icecream");
+  def("eat", "🎂", "cake,birthday cake");
+  def("eat", "🍪", "cookie");
+  def("eat", "🍔", "burger,hamburger,cheeseburger");
+  def("eat", "🍟", "fries,french fries");
+  def("eat", "🌭", "hot dog,hotdog");
+  def("eat", "🍩", "donut,doughnut");
+  def("eat", "🍬", "candy,sweets");
+  def("eat", "🍭", "lollipop");
+  def("eat", "🍫", "chocolate");
+  def("eat", "🌮", "taco");
+  def("eat", "🌯", "burrito");
+  def("eat", "🍎", "apple");
+  def("eat", "🍌", "banana");
+  def("eat", "🍉", "watermelon");
+  def("eat", "🍓", "strawberry");
+  def("eat", "🍇", "grapes,grape");
+  def("eat", "🍒", "cherry");
+  def("eat", "🍿", "popcorn");
+  def("eat", "🍣", "sushi");
+  def("eat", "🧁", "cupcake");
+  def("eat", "🥞", "pancakes,pancake");
+  def("eat", "🥪", "sandwich");
+  def("eat", "🍝", "spaghetti,pasta");
+  def("eat", "🍜", "noodles,ramen");
+  def("eat", "🥤", "soda,pop,drink,slushie");
+  def("eat", "🥛", "milk");
+  def("eat", "🧃", "juice");
+  def("eat", "🧀", "cheese");
+  def("eat", "🍞", "bread");
+  def("eat", "🥧", "pie");
+  def("eat", "🍗", "chicken nuggets,nuggets,drumstick");
+  def("eat", "🥓", "bacon");
+  def("rain", "💵|💰", "money,cash,dollar,rich,millionaire,billionaire,bucks");
+  def("rain", "🪙", "gold,coin,treasure,gold coin");
+  def("rain", "💎", "diamond,gem,jewel,crystal");
+  def("rain", "💖|💕", "heart,love");
+  def("rain", "🎉|🎊", "confetti,party,celebration");
+  def("rain", "❄️", "snowflake");
+  def("still", "🏠", "house,home");
+  def("still", "🏡", "mansion,big house", { size: 1.8 });
+  def("still", "🏰", "castle,palace", { size: 2 });
+  def("still", "🌳", "tree");
+  def("still", "🌴", "palm tree");
+  def("still", "🎄", "christmas tree");
+  def("still", "🌸", "flower");
+  def("still", "🌹", "rose");
+  def("still", "🌻", "sunflower");
+  def("still", "⛰️", "mountain", { size: 2.4 });
+  def("still", "🌋", "volcano", { size: 2.2 });
+  def("still", "⛺", "tent");
+  def("still", "🏆", "trophy,cup,prize");
+  def("still", "👑", "crown");
+  def("still", "📱", "phone,iphone,smartphone");
+  def("still", "💻", "computer,laptop,pc");
+  def("still", "📺", "tv,television");
+  def("still", "🎮", "video game,game,console,xbox,playstation,ps5,nintendo,controller");
+  def("still", "🎸", "guitar");
+  def("still", "🥁", "drum,drums");
+  def("still", "🎹", "piano,keyboard");
+  def("still", "🧸", "teddy bear,teddy,toy,stuffed animal,plushie");
+  def("still", "📚", "book");
+  def("still", "🎁", "gift,present");
+  def("still", "🗡️", "sword");
+  def("still", "🛡️", "shield");
+  def("still", "🪄", "magic wand,wand,magic");
+  def("still", "⛄", "snowman");
+  def("still", "🎃", "pumpkin");
+  def("still", "🛏️", "bed");
+  def("still", "👟", "shoes,sneakers,shoe");
+  def("still", "🎩", "hat,top hat");
+  def("still", "🕶️", "sunglasses");
+  def("still", "🎒", "backpack");
+  def("still", "⌚", "watch");
+  def("still", "💍", "ring");
+  def("still", "🧱", "lego,legos,blocks,brick");
+  def("still", "🎡", "ferris wheel,carnival", { size: 2.2 });
+  def("still", "🎢", "roller coaster,rollercoaster,theme park", { size: 2.2 });
+  def("still", "🗽", "statue");
+  def("still", "🗿", "moai");
+  def("sky", "snow", "snow,snowing,snowstorm,blizzard,winter");
+  def("sky", "rain", "rain,raining,rainy");
+  def("sky", "rainbow", "rainbow");
+  def("sky", "night", "night,nighttime,dark,moon,stars,star");
+  def("sky", "day", "day,daytime,sun,sunny,sunshine,summer");
+  def("sky", "fireworks", "fireworks,firework");
+  def("sky", "storm", "storm,thunder,lightning,thunderstorm");
+
+  var FILLER = " i want wish wished for a an the some to have has give gimme me please my own of get would like could make it there was were be is with can real really new pet im i'd id id'd that this would that'd we us our more one big ";
+  // ("big" and "one" are handled below before this check)
+  var NUMBERS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
+    dozen: 12, twenty: 20, thirty: 30, fifty: 50, hundred: 100, thousand: 1000, million: 1e6, billion: 1e9, zillion: 1e9,
+    lots: 12, many: 12, tons: 15, bunch: 8, loads: 12, infinite: 1e9, infinity: 1e9 };
+  var SIZES = { giant: 2.4, huge: 2.2, gigantic: 2.6, enormous: 2.5, massive: 2.4, big: 1.6, large: 1.6, tiny: .5, small: .65, little: .65, mini: .5, baby: .7 };
+  var COLORS = { red: "#ef4444", blue: "#3b82f6", green: "#22c55e", yellow: "#facc15", purple: "#a855f7", pink: "#ec4899", orange: "#f97316",
+    gold: "#fbbf24", golden: "#fbbf24", black: "#111", white: "#fff", silver: "#cbd5e1", rainbow: "rainbow", sparkly: "#fff", glowing: "#fde68a" };
+
+  function lookup(w) {
+    if (DICT[w]) return DICT[w];
+    if (w.length > 4 && /ies$/.test(w) && DICT[w.slice(0, -3) + "y"]) return DICT[w.slice(0, -3) + "y"];
+    if (w.length > 3 && /es$/.test(w) && DICT[w.slice(0, -2)]) return DICT[w.slice(0, -2)];
+    if (w.length > 2 && /s$/.test(w) && DICT[w.slice(0, -1)]) return DICT[w.slice(0, -1)];
+    return null;
+  }
+
+  function singular(w) {
+    if (DICT[w]) return w;
+    if (/ies$/.test(w) && DICT[w.slice(0, -3) + "y"]) return w.slice(0, -3) + "y";
+    if (/es$/.test(w) && DICT[w.slice(0, -2)]) return w.slice(0, -2);
+    if (/s$/.test(w) && DICT[w.slice(0, -1)]) return w.slice(0, -1);
+    return w;
+  }
+  // Turn "I want 3 giant red cars and a puppy" into a list of things to make.
+  function parse(text) {
+    var t = text.toLowerCase().replace(/[^a-z0-9'\- ]+/g, " ").replace(/\s+/g, " ").trim();
+    var words = t.split(" ").filter(Boolean), out = [], unknown = [];
+    var count = null, size = null, color = null;
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i], hit = null, used = 1;
+      for (var n = 3; n >= 2 && !hit; n--) {
+        if (i + n <= words.length) { var phrase = words.slice(i, i + n).join(" "); hit = lookup(phrase); if (hit) used = n; }
+      }
+      // color words that are also things: "gold" alone means coins, "gold car" means a golden car
+      if (!hit && COLORS[w] === undefined) hit = lookup(w);
+      else if (!hit && COLORS[w] !== undefined) {
+        var next = words[i + 1] && (lookup(words[i + 1]) || SIZES[words[i + 1]]);
+        if (next) { color = COLORS[w]; continue; }
+        hit = lookup(w);
+        if (!hit && w === "rainbow") hit = DICT.rainbow;
+        if (!hit) { color = COLORS[w]; continue; }
+      }
+      if (hit) {
+        out.push({ entry: hit, word: singular(words.slice(i, i + used).join(" ")), count: count || 1, countGiven: count !== null, size: size, color: color });
+        count = size = color = null; i += used - 1; continue;
+      }
+      if (/^\d+$/.test(w)) { count = (count || 1) * parseInt(w, 10); continue; }
+      if (NUMBERS[w] !== undefined) { count = (count && count > 1 ? count : 1) * NUMBERS[w]; continue; }
+      if (SIZES[w] !== undefined) { size = SIZES[w]; continue; }
+      if (FILLER.indexOf(" " + w + " ") >= 0) continue;
+      if (/^(and|or|also|plus|then|lot|lots|huge|so|very|super|cool|awesome|nice|cute|fast|fancy|magical|flying)$/.test(w)) continue;
+      unknown.push(w);
+    }
+    // "I want a million" with nothing else means money
+    if (!out.length && count && count >= 1e6) out.push({ entry: DICT.money, count: 1, countGiven: false });
+    return { items: out, unknown: unknown };
+  }
+
+  // ---------- world ----------
+  var stage = document.getElementById("stage"), fx = document.getElementById("fx"), g = fx.getContext("2d");
+  var W = 0, H = 0, groundTop = 0, base = 56, dpr = 1;
+  function resize() {
+    W = stage.clientWidth; H = stage.clientHeight; groundTop = H * 0.66;
+    base = Math.max(38, Math.min(64, W / 13));
+    dpr = window.devicePixelRatio || 1;
+    fx.width = Math.round(W * dpr); fx.height = Math.round(H * dpr);
+    things.forEach(function (th) { th.x = Math.min(Math.max(th.x, 20), W - 20); th.y = Math.min(th.y, H - 6); if (th.ground) th.y = Math.max(th.y, groundTop + 16); });
+  }
+  var things = [], sel = null, keys = {};
+  var rnd = function (a, b) { return a + Math.random() * (b - a); };
+  var pick = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+  function groundY() { return rnd(groundTop + 22, H - 8); }
+
+  function spawn(entry, opts) {
+    opts = opts || {};
+    var size = (opts.size || entry.size || 1) * (opts.small ? .6 : 1);
+    var el = document.createElement("div"); el.className = "thing";
+    var e = document.createElement("span"); e.className = "e"; e.textContent = opts.emoji || pick(entry.emoji); el.appendChild(e);
+    el.style.fontSize = Math.round(base * size) + "px";
+    var c = opts.color;
+    if (c === "rainbow") el.classList.add("rainbowfx");
+    else if (c) el.style.filter = "drop-shadow(0 0 7px " + c + ") drop-shadow(0 0 2px " + c + ")";
+    var type = entry.type;
+    var th = { el: el, e: e, entry: entry, type: type, size: size, px: base * size, dir: 1, vx: 0, vy: 0, jy: 0, jv: 0, t: rnd(0, 10), timer: rnd(.3, 2), bites: 0, life: 0 };
+    th.ground = type === "drive" || type === "walk" || type === "eat" || type === "still" || type === "bounce" || type === "mystery";
+    var sx = opts.x != null ? opts.x : rnd(40, W - 40);
+    th.x = sx;
+    if (type === "fly" || type === "flyer") { th.y = rnd(H * .12 + th.px, groundTop - 10); th.baseY = th.y; th.vx = type === "fly" ? rnd(40, 90) * (Math.random() < .5 ? -1 : 1) : 0; }
+    else if (type === "swim") { th.y = rnd(groundTop - 70, groundTop + 10); th.baseY = th.y; th.vx = rnd(30, 60) * (Math.random() < .5 ? -1 : 1); }
+    else if (type === "bounce") { th.y = rnd(H * .2, groundTop); th.floor = groundY(); th.vx = rnd(-120, 120); }
+    else th.y = groundY();
+    if (opts.y != null) th.y = opts.y;
+    if (type === "mystery") e.title = "Click to open";
+    el._th = th;
+    stage.appendChild(el);
+    things.push(th);
+    while (things.length > 90) kill(things[0]);
+    if (!opts.noPuff) puff(th.x, th.y - th.px / 2, 16);
+    return th;
+  }
+  function kill(th) { var i = things.indexOf(th); if (i >= 0) things.splice(i, 1); th.el.remove(); if (sel === th) select(null); }
+
+  function select(th) {
+    if (sel) sel.el.classList.remove("sel");
+    sel = th;
+    var hint = document.getElementById("drivehint"), pad = document.getElementById("pad");
+    if (th) {
+      th.el.classList.add("sel");
+      hint.textContent = th.e.textContent + "  Arrow keys to " + (th.type === "flyer" ? "fly" : "drive") + ", space to " + (th.type === "flyer" ? "boost" : "honk");
+      hint.hidden = false; pad.hidden = false;
+    } else { hint.hidden = true; pad.hidden = true; }
+  }
+
+  function pop(x, y, text) {
+    var p = document.createElement("div"); p.className = "pop"; p.textContent = text;
+    p.style.left = x + "px"; p.style.top = y + "px"; stage.appendChild(p);
+    setTimeout(function () { p.remove(); }, 1150);
+  }
+
+  // ---------- effects canvas: sparkles, weather, fireworks, stars ----------
+  var parts = [], weather = null, weatherUntil = 0, fireworksUntil = 0, stars = [];
+  for (var s = 0; s < 90; s++) stars.push({ x: Math.random(), y: Math.random() * .6, r: Math.random() * 1.4 + .3, p: Math.random() * 6 });
+  function puff(x, y, n) {
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * Math.PI * 2, sp = rnd(40, 180);
+      parts.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 30, life: rnd(.5, 1), max: 1, col: pick(["#fde68a", "#fbbf24", "#f0abfc", "#c4b5fd", "#ffffff"]), r: rnd(2, 5), star: Math.random() < .4 });
+    }
+  }
+  function burst(x, y) {
+    var col = pick(["#f43f5e", "#facc15", "#22d3ee", "#a3e635", "#e879f9", "#fb923c", "#ffffff"]);
+    for (var i = 0; i < 46; i++) { var a = i / 46 * Math.PI * 2, sp = rnd(90, 210); parts.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: rnd(.9, 1.4), max: 1.4, col: col, r: 2.4, grav: 60 }); }
+    boom();
+  }
+  var drops = [];
+  function drawFx(dt, now) {
+    g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+    var sky = stage.dataset.sky;
+    if (sky === "dusk" || sky === "night") {
+      for (var i = 0; i < stars.length; i++) { var st = stars[i]; g.globalAlpha = (sky === "night" ? .9 : .6) * (.55 + .45 * Math.sin(now / 600 + st.p)); g.fillStyle = "#fff"; g.fillRect(st.x * W, st.y * groundTop, st.r, st.r); }
+      g.globalAlpha = 1;
+    }
+    // weather
+    if (weather && now < weatherUntil) {
+      var want = weather === "snow" ? 160 : 220;
+      while (drops.length < want) drops.push({ x: Math.random() * W, y: -Math.random() * H, v: weather === "snow" ? rnd(30, 70) : rnd(500, 750), w: rnd(-20, 20), r: rnd(1.5, 3.5) });
+    }
+    for (var d = drops.length - 1; d >= 0; d--) {
+      var p = drops[d];
+      p.y += p.v * dt;
+      if (weather === "snow") { p.x += Math.sin(now / 700 + p.r * 3) * 20 * dt; g.fillStyle = "rgba(255,255,255,.9)"; g.beginPath(); g.arc(p.x, p.y, p.r, 0, 7); g.fill(); }
+      else { g.strokeStyle = "rgba(170,200,255,.6)"; g.lineWidth = 1.4; g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(p.x - 2, p.y - 12); g.stroke(); }
+      if (p.y > H) { if (weather && now < weatherUntil) { p.y = -10; p.x = Math.random() * W; } else drops.splice(d, 1); }
+    }
+    if (weather === "storm" && now < weatherUntil && Math.random() < dt * .35) lightning();
+    if (now < fireworksUntil && Math.random() < dt * 2.2) burst(rnd(W * .15, W * .85), rnd(H * .1, groundTop * .7));
+    // sparkles
+    for (var k = parts.length - 1; k >= 0; k--) {
+      var q = parts[k]; q.life -= dt; if (q.life <= 0) { parts.splice(k, 1); continue; }
+      q.vx *= .96; q.vy = q.vy * .96 + (q.grav || 0) * dt; q.x += q.vx * dt; q.y += q.vy * dt;
+      g.globalAlpha = Math.max(0, q.life / (q.max || 1)); g.fillStyle = q.col;
+      if (q.star) { g.save(); g.translate(q.x, q.y); g.rotate(q.life * 6); g.fillRect(-q.r, -.8, q.r * 2, 1.6); g.fillRect(-.8, -q.r, 1.6, q.r * 2); g.restore(); }
+      else { g.beginPath(); g.arc(q.x, q.y, q.r, 0, 7); g.fill(); }
+    }
+    g.globalAlpha = 1;
+  }
+  function lightning() {
+    var f = document.getElementById("flash"); f.style.transition = "none"; f.style.opacity = ".7";
+    requestAnimationFrame(function () { f.style.transition = "opacity .5s"; f.style.opacity = "0"; });
+    thunder();
+  }
+
+  function setSky(mode) {
+    var map = { dusk: "dusk", snow: "night", rain: "storm", storm: "storm", rainbow: "day", night: "night", day: "day", fireworks: "night" };
+    var sky = map[mode];
+    stage.dataset.sky = sky;
+    ["dusk", "day", "night", "storm"].forEach(function (k) { document.getElementById("sky-" + k).classList.toggle("on", k === sky); });
+    document.getElementById("rainbow").classList.toggle("on", mode === "rainbow");
+    document.getElementById("snowcap").classList.toggle("on", mode === "snow");
+    var now = performance.now();
+    if (mode === "snow" || mode === "rain" || mode === "storm") { weather = mode; weatherUntil = now + 25000; }
+    else { weatherUntil = 0; }
+    if (mode === "fireworks") fireworksUntil = now + 9000;
+    if (mode === "storm") lightning();
+  }
+
+  function rain(entry, n) {
+    for (var i = 0; i < n; i++) {
+      (function (i) {
+        setTimeout(function () {
+          var th = spawn(entry, { small: true, noPuff: true, x: rnd(20, W - 20), y: -rnd(10, 80) });
+          th.type = "drop"; th.ground = false; th.floor = groundY(); th.vy = rnd(0, 120); th.spin = rnd(-6, 6); th.life = rnd(6, 9);
+          parts.length > 400 && parts.splice(0, 100);
+        }, i * 45);
+      })(i);
+    }
+  }
+
+  // ---------- the game loop ----------
+  var last = performance.now();
+  function frame(now) {
+    var dt = Math.min(.05, (now - last) / 1000); last = now;
+    for (var i = things.length - 1; i >= 0; i--) update(things[i], dt, now);
+    drawFx(dt, now);
+    requestAnimationFrame(frame);
+  }
+  function face(th) { var d = th.vx > 4 ? -1 : th.vx < -4 ? 1 : th.dir; if (d !== th.dir) { th.dir = d; th.e.style.transform = "scaleX(" + d + ")"; } }
+  function update(th, dt, now) {
+    th.t += dt;
+    var rot = 0, top = groundTop + 16, k = keys;
+    switch (th.type) {
+      case "walk":
+        th.timer -= dt;
+        if (th.timer <= 0) { th.vx = Math.random() < .25 ? 0 : rnd(30, 90) * (Math.random() < .5 ? -1 : 1); th.timer = rnd(1.5, 4); }
+        if (th.jy === 0 && Math.random() < dt * .5) th.jv = -rnd(160, 260);
+        th.x += th.vx * dt;
+        if (th.x < 20 || th.x > W - 20) { th.vx *= -1; th.x = Math.min(Math.max(th.x, 20), W - 20); }
+        face(th); break;
+      case "fly":
+        th.x += th.vx * dt; th.y = th.baseY + Math.sin(th.t * 2) * 18;
+        if (th.x < 20 || th.x > W - 20) { th.vx *= -1; th.x = Math.min(Math.max(th.x, 20), W - 20); }
+        face(th); break;
+      case "swim":
+        th.x += th.vx * dt; th.y = th.baseY + Math.sin(th.t * 3) * 10; rot = Math.sin(th.t * 6) * 8;
+        if (th.x < 20 || th.x > W - 20) { th.vx *= -1; th.x = Math.min(Math.max(th.x, 20), W - 20); }
+        face(th); break;
+      case "drive":
+        if (sel === th) {
+          var ax = (k.ArrowRight ? 1 : 0) - (k.ArrowLeft ? 1 : 0), ay = (k.ArrowDown ? 1 : 0) - (k.ArrowUp ? 1 : 0);
+          th.vx += ax * 900 * dt; th.y += ay * 160 * dt;
+          if (k[" "] && !th.honked) { th.honked = true; honk(); pop(th.x, th.y - th.px, "BEEP!"); if (th.jy === 0) th.jv = -220; }
+          if (!k[" "]) th.honked = false;
+        }
+        th.vx *= Math.pow(.15, dt); th.vx = Math.max(-520, Math.min(520, th.vx));
+        th.x += th.vx * dt; th.y = Math.min(Math.max(th.y, top), H - 6);
+        if (th.x < 20 || th.x > W - 20) { th.vx *= -.4; th.x = Math.min(Math.max(th.x, 20), W - 20); }
+        rot = th.jy < 0 ? -th.dir * 6 : 0;
+        face(th); break;
+      case "flyer":
+        if (sel === th) {
+          var fx2 = (k.ArrowRight ? 1 : 0) - (k.ArrowLeft ? 1 : 0), fy = (k.ArrowDown ? 1 : 0) - (k.ArrowUp ? 1 : 0), boost = k[" "] ? 2 : 1;
+          th.vx += fx2 * 900 * boost * dt; th.vy += fy * 900 * boost * dt;
+          if (k[" "] && Math.random() < .5) puff(th.x, th.y - th.px * .3, 1);
+        } else th.vy += Math.sin(th.t * 2) * 30 * dt;
+        th.vx *= Math.pow(.2, dt); th.vy *= Math.pow(.2, dt);
+        th.x += th.vx * dt; th.y += th.vy * dt;
+        th.x = Math.min(Math.max(th.x, 20), W - 20); th.y = Math.min(Math.max(th.y, th.px + 4), H - 6);
+        if (th.e.textContent !== "🚀") face(th);
+        rot = th.e.textContent === "🚀" ? Math.atan2(th.vy, th.vx || .001) * 57.3 + 45 : th.vx / 25;
+        if (th.e.textContent === "🚀" && Math.abs(th.vx) + Math.abs(th.vy) < 15) rot = -45 + 0;
+        break;
+      case "bounce":
+        th.vy += 1300 * dt; th.y += th.vy * dt; th.x += th.vx * dt; th.vx *= Math.pow(.6, dt);
+        if (th.y > th.floor) { th.y = th.floor; th.vy = Math.abs(th.vy) > 90 ? -th.vy * .62 : 0; }
+        if (th.x < 20 || th.x > W - 20) { th.vx *= -.8; th.x = Math.min(Math.max(th.x, 20), W - 20); }
+        rot = (th.rot = (th.rot || 0) + th.vx * dt * 3); break;
+      case "drop":
+        th.vy += 900 * dt; th.y += th.vy * dt; rot = (th.rot = (th.rot || 0) + th.spin * dt * 40);
+        if (th.y >= th.floor) { th.y = th.floor; th.vy = 0; th.spin = 0; th.life -= dt; if (th.life < 1) th.el.style.opacity = Math.max(0, th.life); if (th.life <= 0) { kill(th); return; } }
+        break;
+      case "mystery": rot = 0; break;
+    }
+    // little hops
+    if (th.jv || th.jy) { th.jy += th.jv * dt; th.jv += 900 * dt; if (th.jy > 0) { th.jy = 0; th.jv = 0; } }
+    var sq = th.wig > 0 ? (th.wig -= dt, 1 + Math.sin(th.wig * 30) * .12) : 1;
+    th.el.style.transform = "translate(" + (th.x - th.px / 2).toFixed(1) + "px," + (th.y + th.jy - th.px).toFixed(1) + "px) rotate(" + rot.toFixed(1) + "deg) scale(" + sq.toFixed(3) + "," + (2 - sq).toFixed(3) + ")";
+    th.el.style.zIndex = (th.type === "fly" || th.type === "flyer" || th.type === "drop") ? 2000 + Math.round(th.y) : Math.round(th.y);
+  }
+
+  // ---------- clicking things ----------
+  stage.addEventListener("pointerdown", function (ev) {
+    var el = ev.target.closest(".thing");
+    if (document.activeElement === input) input.blur();
+    if (!el) return;
+    var th = el._th, x = th.x, y = th.y + th.jy - th.px;
+    switch (th.type) {
+      case "drive": case "flyer": select(th); pop(x, y, th.type === "flyer" ? "Ready!" : "Vroom!"); vroom(); break;
+      case "walk": case "fly": case "swim": pop(x, y, pick(["♥", "♥", "Yay!", "Hi!"])); th.jv = -260; th.wig = .4; sparkle(); break;
+      case "eat":
+        th.bites++; chomp(); th.wig = .3;
+        if (th.bites >= 3) { pop(x, y, "Yum!"); puff(x, th.y - th.px / 2, 10); kill(th); }
+        else { pop(x, y, "Chomp!"); th.px = base * th.size * (1 - th.bites * .25); th.el.style.fontSize = Math.round(th.px) + "px"; }
+        break;
+      case "bounce": th.vy = -rnd(600, 800); th.vx = rnd(-300, 300); pop(x, y, "Boing!"); boing(); break;
+      case "mystery":
+        var surprise = pick(ALL.filter(function (a) { return a.type !== "rain"; }));
+        pop(x, y, "Surprise!"); kill(th); chime();
+        var s2 = spawn(surprise, { x: x, y: th.ground ? th.y : null });
+        if (s2.type === "drive" || s2.type === "flyer") select(s2);
+        genieSay("It was a " + surprise.name + "!");
+        break;
+      default: th.wig = .5; pop(x, y, pick(["Ooh!", "Wow!", "✨"])); sparkle(); puff(x, th.y - th.px / 2, 8);
+    }
+  });
+
+  // ---------- keyboard ----------
+  var input = document.getElementById("wish");
+  var DRIVE_KEYS = { ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1, " ": 1 };
+  addEventListener("keydown", function (e) {
+    if (e.target === input) { if (e.key === "Escape") input.blur(); return; }
+    if (DRIVE_KEYS[e.key]) { if (sel) { keys[e.key] = true; e.preventDefault(); } return; }
+    if (e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey && e.target.tagName !== "BUTTON") input.focus();
+    if (e.key === "Enter") input.focus();
+  });
+  addEventListener("keyup", function (e) { keys[e.key] = false; });
+  addEventListener("blur", function () { keys = {}; });
+  document.querySelectorAll("#pad button").forEach(function (b) {
+    var k = b.dataset.k;
+    b.addEventListener("pointerdown", function (e) { e.preventDefault(); keys[k] = true; });
+    ["pointerup", "pointerleave", "pointercancel"].forEach(function (n) { b.addEventListener(n, function () { keys[k] = false; }); });
+  });
+
+  // ---------- the genie talks ----------
+  var genie = document.getElementById("genie"), bubble = document.getElementById("bubble"), sayT = 0;
+  function genieSay(msg, ms) {
+    bubble.textContent = msg; bubble.hidden = false; genie.classList.add("up");
+    clearTimeout(sayT); sayT = setTimeout(function () { genie.classList.remove("up"); bubble.hidden = true; }, ms || 4200);
+  }
+  var name = player && player.name ? String(player.name) : "";
+  var GRANTS = ["Your wish is my command!", "Poof! Wish granted.", "Ta-da!", "Shazam! It's yours.", "As you wish!", "Abracadabra!"];
+
+  // "a giant car", "an apple", "5 puppies", "some fries"
+  function label(entry, n, sizeWord) {
+    var w = entry.name, pre = sizeWord ? sizeWord + " " : "";
+    var many = /(us|ss|sh|ch|x)$/.test(w) ? w + "es" : /s$/.test(w) ? w : /[^aeiou]y$/.test(w) ? w.slice(0, -1) + "ies" : w + "s";
+    if (n > 1) return n + " " + pre + many;
+    if (/s$/.test(w) && !/(us|ss)$/.test(w)) return "some " + pre + w;
+    return (/^[aeiou]/.test(pre + w) ? "an " : "a ") + pre + w;
+  }
+
+  function makeWish(text) {
+    text = (text || "").trim();
+    if (!text) { genieSay("Type a wish first, like \"I want a car\"."); input.focus(); return; }
+    ensureAudio();
+    var low = text.toLowerCase();
+    if (/(more|unlimited|infinite|infinity|extra|100|a million|\d+) wishes/.test(low)) { genieSay("Ha! Nice try. You already get unlimited wishes here."); laugh(); return; }
+    if (/\bgenie\b/.test(low) && /(free|be free)/.test(low)) { genieSay("Aww, thank you! But I like it here. Make another wish!"); return; }
+    if (/\b(homework|chores)\b/.test(low)) { rain(DICT.confetti, 30); genieSay("Done! Your " + (/chores/.test(low) ? "chores are" : "homework is") + " finished. (Don't tell your teacher.)"); count1(); return; }
+
+    var res = parse(text);
+    if (!res.items.length) {
+      var word = res.unknown.join(" ");
+      spawn({ type: "mystery", emoji: ["🎁"], name: "gift" }, {});
+      things[things.length - 1].type = "mystery"; things[things.length - 1].el.classList.add("mystery");
+      genieSay(word ? "Hmm, I don't know how to make \"" + word + "\" yet. Here's a mystery gift instead. Click it!" : "Here's a mystery gift. Click it!", 5200);
+      chime(); count1(); return;
+    }
+    var made = [], capped = false, newDrive = null;
+    res.items.forEach(function (it) {
+      var e = it.entry;
+      if (e.type === "sky") { setSky(e.emoji[0]); made.push(e.emoji[0] === "fireworks" ? "fireworks" : e.name === "night" ? "night time" : e.name === "day" ? "sunshine" : e.name); return; }
+      if (e.type === "rain") { var n = it.countGiven ? Math.min(Math.max(it.count, 6), 60) : 40; rain(e, n); made.push(e.name === "rich" || e.name === "money" ? "money" : e.name + "s"); return; }
+      var count = Math.min(it.count, 30); if (it.count > 30) capped = true;
+      for (var i = 0; i < count; i++) {
+        var th = spawn(e, { size: it.size, color: it.color });
+        if ((e.type === "drive" || e.type === "flyer") && !newDrive) newDrive = th;
+      }
+      made.push(label({ name: it.word || e.name }, count,it.size > 1.5 ? "giant" : it.size && it.size < 1 ? "tiny" : ""));
+    });
+    if (newDrive) { select(newDrive); input.blur(); }
+    var line = pick(GRANTS) + " " + listify(made).replace(/^./, function (c) { return c.toUpperCase(); }) + " for you" + (name ? ", " + name : "") + "!";
+    if (capped) line += " (I made as many as would fit.)";
+    if (newDrive) line += newDrive.type === "flyer" ? " Use the arrow keys to fly." : " Use the arrow keys to drive.";
+    genieSay(line);
+    chime(); count1();
+  }
+  function listify(a) { if (a.length <= 1) return a.join(""); return a.slice(0, -1).join(", ") + " and " + a[a.length - 1]; }
+  function count1() { granted++; nEl.textContent = granted; try { localStorage.setItem("genieWishes", String(granted)); } catch (e) {} }
+
+  document.getElementById("wishform").addEventListener("submit", function (e) { e.preventDefault(); makeWish(input.value); input.value = ""; });
+  document.querySelectorAll(".chip").forEach(function (c) { c.addEventListener("click", function () { makeWish(c.textContent); }); });
+  document.getElementById("clear").addEventListener("click", function () {
+    while (things.length) kill(things[0]);
+    setSky("dusk");
+    weatherUntil = 0; fireworksUntil = 0; drops = [];
+    genieSay("All clean! What do you wish for next?");
+  });
+
+  // ---------- sounds (start after the first wish, since browsers need a click first) ----------
+  var ac = null;
+  function ensureAudio() { if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (ac && ac.state === "suspended") ac.resume(); }
+  function tone(freq, dur, type, vol, when, slide) {
+    if (!ac) return; var t = ac.currentTime + (when || 0), o = ac.createOscillator(), v = ac.createGain();
+    o.type = type || "sine"; o.frequency.setValueAtTime(freq, t); if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+    v.gain.setValueAtTime(vol || .12, t); v.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(v); v.connect(ac.destination); o.start(t); o.stop(t + dur + .02);
+  }
+  function chime() { [784, 988, 1175, 1568].forEach(function (f, i) { tone(f, .35, "triangle", .08, i * .07); }); }
+  function sparkle() { tone(1400, .15, "triangle", .06); tone(1900, .15, "triangle", .05, .06); }
+  function honk() { ensureAudio(); tone(370, .18, "square", .06); tone(466, .18, "square", .05); }
+  function vroom() { ensureAudio(); tone(90, .4, "sawtooth", .06, 0, 180); }
+  function chomp() { ensureAudio(); tone(200, .08, "square", .06, 0, 80); }
+  function boing() { ensureAudio(); tone(180, .35, "sine", .12, 0, 520); }
+  function boom() { tone(120, .5, "sawtooth", .03, 0, 40); }
+  function thunder() { tone(60, 1.2, "sawtooth", .05, 0, 30); }
+  function laugh() { [520, 470, 520, 470, 420].forEach(function (f, i) { tone(f, .12, "triangle", .07, i * .12); }); }
+
+  // ---------- start ----------
+  addEventListener("resize", resize);
+  resize();
+  requestAnimationFrame(frame);
+  setTimeout(function () { genieSay((name ? "Hello, " + name + "! " : "Hello! ") + "I'm the genie. Type any wish, like \"I want a car\", and I'll make it come true.", 7000); }, 300);
+})();
+</script>
+</body>
+</html>
